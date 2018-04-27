@@ -8,6 +8,8 @@
 
 namespace Home\Controller;
 
+use Home\Model\ErrorListModel;
+
 class SocketController extends PublicController
 {
     private $ip = '127.0.0.1';
@@ -28,15 +30,24 @@ class SocketController extends PublicController
         }
         $this->last_time = time();
         //让服务器无限获取客户端传过来的信息
-        do {
-            $this->getInformation($socket);
-        } while (true);
-
+        $this->getInformation($socket);
     }
+
 
     public function getInformation($socket)
     {
-
+        do {
+            if (time() - $this->last_time >= $this->heart_time) {
+            socket_shutdown($socket, 2);
+            $error_info = 'Get a heartbeat timeout';
+            try {
+                $insertError = ErrorListModel::insertInformation($error_info);
+                if (! $insertError) throw new \PDOException('插入错误信息失败');
+            } catch (\PDOException $exception) {
+                echo $exception->getMessage();
+            }
+            break;
+        }
         /*接收客户端传过来的信息*/
         $accept_resource = socket_accept($socket);
         /*socket_accept的作用就是接受socket_bind()所绑定的主机发过来的套接流*/
@@ -51,34 +62,19 @@ class SocketController extends PublicController
                         //TODO:: 登录
                         break;
                     case '02':
+                        $this->last_time = time();
                         //TODO::心跳
+                    break;
                     default:
                         return '';
                 }
-                /*向socket_accept的套接流写入信息，也就是回馈信息给socket_bind()所绑定的主机客户端*/
-//                socket_write($accept_resource, $return_client, strlen($return_client));
-                /*socket_write的作用是向socket_create的套接流写入信息，或者向socket_accept的套接流写入信息*/
             } else {
                 echo 'socket_read is fail';
             }
             /*socket_close的作用是关闭socket_create()或者socket_accept()所建立的套接流*/
             socket_close($accept_resource);
         }
+        } while (true);
     }
 
-    /**
-     * 对数据进行拆分
-     * @param $str
-     * @param $arr
-     * @return array
-     */
-    function split_str($str, $arr) {
-        $new_arr = [];
-        $index = 0;
-        for ($i = 0; $i < count($arr); $i++) {
-            $new_arr[] = hexdec(substr($str, $index, $arr[$i]));
-            $index += $arr[$i];
-        }
-        return $new_arr;
-    }
 }
