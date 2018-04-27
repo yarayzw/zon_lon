@@ -9,10 +9,13 @@
 namespace Home\Controller;
 
 
+use Home\Model\EquipmentListModel;
+
 class OperateController extends PublicController
 {
-    public function login() {
-
+    public static function login($string) {
+        $address = base_convert(substr($string, 6, 4), 16, 10);
+        EquipmentListModel::getModelByAddressNo($address);
     }
 
 }
