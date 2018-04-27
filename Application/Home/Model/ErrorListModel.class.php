@@ -14,12 +14,19 @@ class ErrorListModel extends Model
     /**
      * 插入数据
      * @param $info
+     * @param int $type
      * @return mixed
      */
-    public static function insertInformation($info)
+    public static function insertInformation($info, $type = 1)
     {
+        $data = 0;
         $model = M('error_list');
-        $data = $model->data(['error_info' => $info, 'error_time' => date('Y-m-d H:i:s')])->add();
+        try {
+            $data = $model->data(['error_info' => $info, 'error_time' => date('Y-m-d H:i:s'), 'error_type' => $type])->add();
+            if (!$data) throw new \PDOException('插入错误信息失败');
+        } catch (\PDOException $exception) {
+            echo $exception->getMessage();
+        }
         return $data;
     }
 
