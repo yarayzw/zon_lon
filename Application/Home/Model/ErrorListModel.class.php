@@ -11,13 +11,16 @@ use Think\Model;
 
 class ErrorListModel extends Model
 {
+    const ERROR_SOCKET = 1;
+    const ERROR_LOGIN = 2;
+    const ERROR_CHECK_TIME = 3;
     /**
      * 插入数据
      * @param $info
      * @param int $type
      * @return mixed
      */
-    public static function insertInformation($info, $type = 1)
+    public static function insertInformation($info, $type = self::ERROR_SOCKET)
     {
         $data = 0;
         $model = M('error_list');

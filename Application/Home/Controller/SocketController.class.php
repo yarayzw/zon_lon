@@ -12,10 +12,9 @@ use Home\Model\ErrorListModel;
 
 class SocketController extends PublicController
 {
-    private $ip = '127.0.0.1';
-    private $port = 8888;
-    private $heart_time = 5 * 60;
-    private $last_time = '';
+    private $ip = '120.79.183.103';
+    private $port = 8792;
+    const FRAME_HEADER = 'EB90';
     const LOGIN = '01';
     const HEART_JUMP = '02';
     const CHECK_TIME = '07';
@@ -35,7 +34,6 @@ class SocketController extends PublicController
         if (socket_listen($socket, 4) == false) {
             ErrorListModel::insertInformation('server listen fail:' . socket_strerror(socket_last_error()));
         }
-        $this->last_time = time();
         // 让服务器无限获取客户端传过来的信息
         $this->getInformation($socket);
     }
@@ -44,18 +42,13 @@ class SocketController extends PublicController
     public function getInformation($socket)
     {
         do {
-            if (time() - $this->last_time >= $this->heart_time) {
-                socket_close($socket);
-                $error_info = 'Get a heartbeat timeout';
-                ErrorListModel::insertInformation($error_info);
-                break;
-            }
             /*接收客户端传过来的信息*/
             $accept_resource = socket_accept($socket);
             /*socket_accept的作用就是接受socket_bind()所绑定的主机发过来的套接流*/
             if ($accept_resource !== false) {
                 /*读取客户端传过来的资源，并转化为字符串*/
                 $string = socket_read($accept_resource, 1024);
+                print_r($string);
                 // 验证crc校验码是否正确
                 $verify_string = substr($string, 6, -4);
                 $crc_string = substr($string, -4);
@@ -79,7 +72,7 @@ class SocketController extends PublicController
      * @param $socket
      * @return string
      */
-    public function functionHandle($string, $socket)
+    public function functionHandle(string $string, $socket)
     {
         $fun_string = substr($string, 10, 2);
         switch ($fun_string) {
@@ -87,7 +80,6 @@ class SocketController extends PublicController
                 OperateController::login($string, $socket);
                 break;
             case self::HEART_JUMP:
-                $this->last_time = time();
                 OperateController::fun();
                 break;
             case self::READ_MEASUREMENT:
@@ -95,12 +87,6 @@ class SocketController extends PublicController
                 break;
             case self::READ_QUANTITATIVE:
                 //TODO::读定值数据
-                break;
-            case self::WRITE_QUANTITATIVE:
-                //TODO::写定值
-                break;
-            case self::CHECK_TIME:
-               //TODO::对时
                 break;
             default:
                 ErrorListModel::insertInformation('Getting the error of the function code');

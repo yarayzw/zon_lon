@@ -14,17 +14,33 @@ use Home\Model\ErrorListModel;
 
 class OperateController extends PublicController
 {
-    public static function login($string, $socket) {
+    /**
+     * 登录 对时
+     * @param $string
+     * @param $socket
+     * @return null
+     */
+    public static function login($string, $socket)
+    {
+        // 地址的四位的16进制数据
         $address_six_teen = substr($string, 6, 4);
         $address = base_convert($address_six_teen, 16, 10);
-        EquipmentListModel::getModelByAddressNo((string)$address);
-        $year = date('Y');
-        $data_content = $address_six_teen . SocketController::CHECK_TIME . dechex($year % 256) . dechex(floor($year / 256)) . dechex(date('m')) . dechex(date('d')) . dechex(date('H')) . dechex(date('i')) . dechex(date('s'));
+        // 判断数据库中是否该设备 没有则报错
+        $data = EquipmentListModel::getModelByAddressNo((string)$address);
+        if (!$data) {
+            ErrorListModel::insertInformation('No address of the device was found', ErrorListModel::ERROR_LOGIN);
+            return null;
+        }
+        // 组合对时数据包
+        $data_content = $address_six_teen . SocketController::CHECK_TIME . dechex(date('Y') % 256) . dechex(floor(date('Y') / 256)) . dechex(date('m')) . dechex(date('d')) . dechex(date('H')) . dechex(date('i')) . dechex(date('s'));
         $crc_string = self::crc16($data_content);
+        // 计算帧长
         $frame_length  = dechex(strlen($data_content . $crc_string) / 2);
-        $post_data = "<TXEB90{$frame_length}{$data_content}{$crc_string}>";
+        $frame_header = SocketController::FRAME_HEADER;
+        // 拼接数据
+        $post_data = "<TX{$frame_header}{$frame_length}{$data_content}{$crc_string}>";
         if (socket_write($socket, $post_data, strlen($post_data)) === false) {
-            ErrorListModel::insertInformation('Sending time to failure. the data is ' . $post_data, 3);
+            ErrorListModel::insertInformation('Sending time to failure. the data is ' . $post_data, ErrorListModel::ERROR_CHECK_TIME);
         }
     }
 
