@@ -79,7 +79,7 @@ class PublicController extends Controller
      * @param $string
      * @return int
      */
-    protected function crc16($string)
+    protected static function crc16($string)
     {
         $string = pack('H*', $string);
         $crc = 0xFFFF;
@@ -96,4 +96,6 @@ class PublicController extends Controller
         $data = dechex($crc % 256) . dechex(floor($crc / 256));
         return strtoupper($data);
     }
+
+
 }
