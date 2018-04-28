@@ -99,12 +99,12 @@ class PublicController extends Controller
 
     /**
      * [string_before_add 原字符串中，指定位置插入新的字符串]
-     * @param  string $string    [原字符串]
-     * @param  int    $length    [指定位置]
-     * @param  string $add_strig [新插入的字符串]
-     * @return [type]            [description]
+     * @param  string $string [原字符串]
+     * @param  int $length [指定位置]
+     * @param string $add_string
+     * @return string [type]            [description]
      */
-    protected function string_before_add(string $string, int $length, string $add_strig){
+    protected function string_before_add(string $string, int $length, string $add_string){
         /**
          * 如果位置是负数的话，那么找出对应的正整数位置
          */
@@ -118,7 +118,7 @@ class PublicController extends Controller
         for ($j = $length; $j < strlen($string); $j++) $laststr .= $string[$j];
          
         //将插入位置前，要插入的，插入位置后三个字符串拼接起来
-        $new_string = $startstr . $add_strig . $laststr;
+        $new_string = $startstr . $add_string . $laststr;
          
         //返回结果
         return $new_string;

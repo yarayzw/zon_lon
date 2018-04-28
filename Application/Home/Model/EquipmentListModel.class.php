@@ -21,7 +21,6 @@ class EquipmentListModel extends Model
         $model = M('equipment_list');
         $condition = ['equipment_address' => $address_no];
         $data = $model->where($condition)->find();
-        if (!$data) ErrorListModel::insertInformation('No address of the device was found', 2);
         return $data;
     }
 
