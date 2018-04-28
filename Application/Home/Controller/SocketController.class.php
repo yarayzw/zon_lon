@@ -17,6 +17,7 @@ class SocketController extends PublicController
     private $heart_time = 5 * 60;
     private $last_time = '';
 
+    // 连接socket
     public function connectSock()
     {
         set_time_limit(0);
@@ -24,12 +25,12 @@ class SocketController extends PublicController
         if (socket_bind($socket, $this->ip, $this->port) == false) {
            ErrorListModel::insertInformation('server bind fail:' . socket_strerror(socket_last_error()));
         }
-        //监听套接流
+        // 监听套接流
         if (socket_listen($socket, 4) == false) {
             ErrorListModel::insertInformation('server listen fail:' . socket_strerror(socket_last_error()));
         }
         $this->last_time = time();
-        //让服务器无限获取客户端传过来的信息
+        // 让服务器无限获取客户端传过来的信息
         $this->getInformation($socket);
     }
 
@@ -38,7 +39,7 @@ class SocketController extends PublicController
     {
         do {
             if (time() - $this->last_time >= $this->heart_time) {
-                socket_shutdown($socket, 2);
+                socket_close($socket);
                 $error_info = 'Get a heartbeat timeout';
                 ErrorListModel::insertInformation($error_info);
                 break;

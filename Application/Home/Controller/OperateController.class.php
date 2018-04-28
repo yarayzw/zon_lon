@@ -15,7 +15,7 @@ class OperateController extends PublicController
 {
     public static function login($string) {
         $address = base_convert(substr($string, 6, 4), 16, 10);
-        EquipmentListModel::getModelByAddressNo($address);
+        EquipmentListModel::getModelByAddressNo((string)$address);
     }
 
 }

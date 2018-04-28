@@ -12,7 +12,7 @@ use Think\Model;
 class EquipmentListModel extends Model
 {
     /**
-     * 插入数据
+     * 判断数据是否存在数据库中 不存在则插入错误日志
      * @param $address_no
      * @return mixed
      */
