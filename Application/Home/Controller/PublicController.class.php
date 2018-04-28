@@ -13,7 +13,8 @@ use Think\Controller;
 
 class PublicController extends Controller
 {
-    protected function http_post($url, $post_data) {
+    protected function http_post($url, $post_data)
+    {
         $post_string = json_encode($post_data);
         $header = array(
             'Content-type: application/json;charset=utf-8',
@@ -33,7 +34,8 @@ class PublicController extends Controller
         return $data;
     }
 
-    protected function http_get($url) {
+    protected function http_get($url)
+    {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_HEADER, 1);
@@ -47,9 +49,10 @@ class PublicController extends Controller
         return $info;
     }
 
-    protected function ajax_return($status, $data, $msg='', $type='') {
-        if(empty($type)) $type = C('DEFAULT_AJAX_RETURN');
-        switch (strtoupper($type)){
+    protected function ajax_return($status, $data, $msg = '', $type = '')
+    {
+        if (empty($type)) $type = C('DEFAULT_AJAX_RETURN');
+        switch (strtoupper($type)) {
             case 'JSON' :
                 // 返回JSON数据格式到客户端 包含状态信息
                 header('Content-Type:application/json; charset=utf-8');
@@ -62,13 +65,37 @@ class PublicController extends Controller
             case 'JSONP':
                 // 返回JSON数据格式到客户端 包含状态信息
                 header('Content-Type:application/json; charset=utf-8');
-                $handler  =   isset($_GET[C('VAR_JSONP_HANDLER')]) ? $_GET[C('VAR_JSONP_HANDLER')] : C('DEFAULT_JSONP_HANDLER');
-                exit($handler.'('.json_encode($data).');');
+                $handler = isset($_GET[C('VAR_JSONP_HANDLER')]) ? $_GET[C('VAR_JSONP_HANDLER')] : C('DEFAULT_JSONP_HANDLER');
+                exit($handler . '(' . json_encode($data) . ');');
             case 'EVAL' :
                 // 返回可执行的js脚本
                 header('Content-Type:text/html; charset=utf-8');
                 exit($data);
         }
     }
+
+    /**
+     * 生成数据CRC验证码
+     * @param $string
+     * @return int
+     */
+    protected static function crc16($string)
+    {
+        $string = pack('H*', $string);
+        $crc = 0xFFFF;
+        for ($x = 0; $x < strlen($string); $x++) {
+            $crc = $crc ^ ord($string[$x]);
+            for ($y = 0; $y < 8; $y++) {
+                if (($crc & 0x0001) == 0x0001) {
+                    $crc = (($crc >> 1) ^ 0xA001);
+                } else {
+                    $crc = $crc >> 1;
+                }
+            }
+        }
+        $data = dechex($crc % 256) . dechex(floor($crc / 256));
+        return strtoupper($data);
+    }
+
 
 }

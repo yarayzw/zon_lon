@@ -16,7 +16,14 @@ class SocketController extends PublicController
     private $port = 8888;
     private $heart_time = 5 * 60;
     private $last_time = '';
+    const LOGIN = '01';
+    const HEART_JUMP = '02';
+    const CHECK_TIME = '07';
+    const READ_MEASUREMENT = '03';
+    const READ_QUANTITATIVE = '04';
+    const WRITE_QUANTITATIVE = '06';
 
+    // 连接socket
     public function connectSock()
     {
         set_time_limit(0);
@@ -24,12 +31,12 @@ class SocketController extends PublicController
         if (socket_bind($socket, $this->ip, $this->port) == false) {
            ErrorListModel::insertInformation('server bind fail:' . socket_strerror(socket_last_error()));
         }
-        //监听套接流
+        // 监听套接流
         if (socket_listen($socket, 4) == false) {
             ErrorListModel::insertInformation('server listen fail:' . socket_strerror(socket_last_error()));
         }
         $this->last_time = time();
-        //让服务器无限获取客户端传过来的信息
+        // 让服务器无限获取客户端传过来的信息
         $this->getInformation($socket);
     }
 
@@ -38,7 +45,7 @@ class SocketController extends PublicController
     {
         do {
             if (time() - $this->last_time >= $this->heart_time) {
-                socket_shutdown($socket, 2);
+                socket_close($socket);
                 $error_info = 'Get a heartbeat timeout';
                 ErrorListModel::insertInformation($error_info);
                 break;
@@ -49,9 +56,14 @@ class SocketController extends PublicController
             if ($accept_resource !== false) {
                 /*读取客户端传过来的资源，并转化为字符串*/
                 $string = socket_read($accept_resource, 1024);
+                // 验证crc校验码是否正确
+                $verify_string = substr($string, 6, -4);
+                $crc_string = substr($string, -4);
+                $verify_crc = $this->crc16($verify_string);
+                if ($crc_string != $verify_crc) ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
                 /*socket_read的作用就是读出socket_accept()的资源并把它转化为字符串*/
                 if ($string != false) {
-                    $this->functionHandle($string);
+                    $this->functionHandle($string, $socket);
                 } else {
                     ErrorListModel::insertInformation('socket_read is fail');
                 }
@@ -64,18 +76,31 @@ class SocketController extends PublicController
     /**
      * 截取16进制功能码 对方法进行分发
      * @param $string
+     * @param $socket
      * @return string
      */
-    public function functionHandle($string)
+    public function functionHandle($string, $socket)
     {
         $fun_string = substr($string, 10, 2);
         switch ($fun_string) {
-            case '01':
-                OperateController::login($string);
+            case self::LOGIN:
+                OperateController::login($string, $socket);
                 break;
-            case '02':
+            case self::HEART_JUMP:
                 $this->last_time = time();
                 OperateController::fun();
+                break;
+            case self::READ_MEASUREMENT:
+                //TODO::读测量数据
+                break;
+            case self::READ_QUANTITATIVE:
+                //TODO::读定值数据
+                break;
+            case self::WRITE_QUANTITATIVE:
+                //TODO::写定值
+                break;
+            case self::CHECK_TIME:
+               //TODO::对时
                 break;
             default:
                 ErrorListModel::insertInformation('Getting the error of the function code');
