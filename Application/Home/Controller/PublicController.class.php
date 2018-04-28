@@ -97,5 +97,30 @@ class PublicController extends Controller
         return strtoupper($data);
     }
 
+    /**
+     * [string_before_add 原字符串中，指定位置插入新的字符串]
+     * @param  string $string    [原字符串]
+     * @param  int    $length    [指定位置]
+     * @param  string $add_strig [新插入的字符串]
+     * @return [type]            [description]
+     */
+    protected function string_before_add(string $string, int $length, string $add_strig){
+        /**
+         * 如果位置是负数的话，那么找出对应的正整数位置
+         */
+        if((int)$length < 0) $length = strlen($string) - strlen(substr($string, $length));
+        //指定插入位置前的字符串
+        $startstr="";
+        for($j = 0; $j < $length; $j++) $startstr .= $string[$j];
 
+        //指定插入位置后的字符串
+        $laststr="";
+        for ($j = $length; $j < strlen($string); $j++) $laststr .= $string[$j];
+         
+        //将插入位置前，要插入的，插入位置后三个字符串拼接起来
+        $new_string = $startstr . $add_strig . $laststr;
+         
+        //返回结果
+        return $new_string;
+    }
 }
