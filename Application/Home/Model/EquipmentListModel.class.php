@@ -24,5 +24,11 @@ class EquipmentListModel extends Model
         return $data;
     }
 
-
+    public static function createData($data){
+        $model = M('equipment_list');
+        $_data = $model->where(['equipment_address' => $data['equipment_address']])->find();
+        if(!$_data){
+            return $model->add($data);
+        }else return 0;
+    }
 }

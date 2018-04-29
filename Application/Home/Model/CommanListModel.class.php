@@ -18,10 +18,9 @@ class CommanListModel extends Model
      * @param $info
      * @return mixed
      */
-    public static function insertCommand(array $data = [])
+    public static function insertCommand( $data = [])
     {
         $model = M(self::$table_name);
-
         $data = $model->data($data)->add();
         return $data;
     }
