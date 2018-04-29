@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <include file="Public/common_header" />
+    <style media="screen">
+        #page div .pagination{margin:0;}
+        .label-lg{
+            font-size:12px!important;
+            padding: 7px;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<!-- Panel Other -->
+<div class="ibox float-e-margins">
+    <div class="ibox-title">
+        <h5>管理员列表</h5>
+        <div class="ibox-tools">
+            <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+            </a>
+            <a class="close-link">
+                <i class="fa fa-times"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <div class="row row-lg">
+            <div class="col-sm-12">
+                <!-- Example Toolbar -->
+                <div class="example-wrap">
+                    <div class="example">
+                        <div class="btn-group hidden-xs" id="exampleToolbar" role="group">
+                            <a data-toggle="modal" href="#modal-form"  class="btn btn-outline btn-default" title="添加管理员">
+                                <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>
+                            </a>
+                            <a id="editmodal" style="display:none;" data-toggle="modal" href="#modal-form-edit"  class="btn btn-outline btn-default" title="添加管理员">
+                                <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-condensed table-hover table-striped">
+                                <thead>
+
+                                <tr>
+                                    <th width="5%"><span>序号ID</span></th>
+                                    <th width="10%"><span>管理账号</span></th>
+                                    <th width="10%"><span>管理员姓名</span></th>
+                                    <th width="10%">联系电话</th>
+                                    <th width="10%"><span>角色权限</span></th>
+                                    <th width="15%"><span>最后登录时间</span></th>
+                                    <th width="10%"><span>登录IP</span></th>
+                                    <th width="10%">状态</th>
+                                    <th width="20%">操作管理</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <volist name="list" id="val" >
+                                    <tr>
+                                        <td>{$val.id}</td>
+                                        <td>{$val.account}</td>
+                                        <td><b>{$val.nickname}</b></td>
+                                        <td><b>{$val.phone}</b></td>
+                                        <td><notempty name="val.group">
+                                            {$val.group.title}
+                                            <else/>
+                                            无权限
+                                        </notempty></td>
+                                        <td>
+                                            <notempty name="val.last_time">
+                                                {$val.last_time|date="Y-m-d H:i:s",###}
+                                                <else/>
+                                                无
+                                            </notempty>
+                                        </td>
+                                        <td>
+                                            <notempty name="val.last_ip">
+                                                {$val.last_ip}
+                                                <else/>
+                                                无
+                                            </notempty>
+                                        </td>
+                                        <td>
+                                            <if condition="$val.status eq 1">
+                                                <span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check"></i></span>
+                                                <else />
+                                                <span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close"></i></span>
+                                            </if>
+                                        </td>
+                                        <td>
+                                            <neq name="val.id" value="1">
+                                                <a action="editmanager" href="javascript:;" class="label label-info label-lg" data-title="{$val.account}"  data-id="{$val.id}"><i class="fa fa-times"></i>编辑</a>
+                                                <a action="deleteitem" href="javascript:;" class="label label-danger label-lg" onclick="" data-title="{$val.account}"  data-id="{$val.id}" ><i class="fa fa-times"></i>删除</a>
+                                            </neq>
+                                        </td>
+                                    </tr>
+                                </volist>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6" >
+                                <div class="dataTables_info" id="editable_info" role="alert" aria-live="polite" aria-relevant="all">
+                                    <!--<label class="select_all"><input onclick="checkAll(this);" type="checkbox" name="checkall" class="check-all check">全选/取消</label>-->
+                                </div>
+                            </div>
+                            <div class="col-sm-6 text-right" id="page">{$page}</div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End Example Toolbar -->
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Panel Other -->
+<div id="modal-form" class="modal fade" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-14">
+                        <form onsubmit="reutrn false;" class="form-horizontal m-t" id="commentForm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">管理员账号：</label>
+                                <div class="col-sm-8">
+                                    <input  type="text" autocomplete="off" class="form-control" required="" maxlength="22" name="account" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">登录密码：</label>
+                                <div class="col-sm-8">
+                                    <input type="password" autocomplete="off" class="form-control" required="" maxlength="22" name="password" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">姓名：</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" required="" maxlength="22" name="nickname" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">联系电话：</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" required="" maxlength="22" name="phone" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">状态：</label>
+                                <div class="col-sm-8">
+                                    <select name="status" class="form-control m-b">
+                                        <option value="1">正常</option>
+                                        <option value="0">锁定</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">角色权限：</label>
+                                <div class="col-sm-8">
+                                    <select name="group" class="form-control m-b">
+                                        <option value="0">无权限</option>
+                                        <volist name="groups" id="item">
+                                            <option value="{$item.id}">{$item.title}</option>
+                                        </volist>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-4 col-sm-offset-3">
+                                    <button id="btnAddManager" class="btn btn-primary" type="button">提交</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="modal-form-edit" class="modal fade" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-14">
+                        <form onsubmit="reutrn false;" class="form-horizontal m-t" id="editmanagerform">
+                            <input type="hidden" name="id" />
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">管理员账号：</label>
+                                <div class="col-sm-8">
+                                    <input  type="text" autocomplete="off" readonly="readonly" class="form-control" required="" maxlength="22" name="account" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">登录密码：</label>
+                                <div class="col-sm-8">
+                                    <input  placeholder="为空时，则不更新密码。" type="password" autocomplete="off" class="form-control" required="" maxlength="22" name="password" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">姓名：</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" required="" maxlength="22" name="nickname" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">联系电话：</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" required="" maxlength="22" name="phone" aria-required="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">状态：</label>
+                                <div class="col-sm-8">
+                                    <select name="status" class="form-control m-b">
+                                        <option value="1">正常</option>
+                                        <option value="0">锁定</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">角色权限：</label>
+                                <div class="col-sm-8">
+                                    <select name="group_id" class="form-control m-b">
+                                        <option value="0">无权限</option>
+                                        <volist name="groups" id="item">
+                                            <option value="{$item.id}">{$item.title}</option>
+                                        </volist>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-4 col-sm-offset-3">
+                                    <button id="btneditManager" class="btn btn-primary" type="button">保存修改</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<include file="Public/common_footer" />
+<script type="text/javascript">
+    $(function () {
+        $("a[action='editmanager']").on("click",function () {
+            var index_laod=layer.load();
+            $this=$(this);
+            $.post("{:U('Auth/do_getmanager')}",{id:$this.data("id")},function (result) {
+                layer.close(index_laod);
+                if(result.code==20000){
+                    $form=$("#editmanagerform");
+                    loadData($form,result.data);
+                    $("#editmodal").click();
+                }else{
+                    layer.msg(result.message);
+                }
+            },"json")
+        })
+        $("#btneditManager").on("click",function () {
+            $form=$("#editmanagerform");
+            if(validateedit()){
+                var index_load=layer.load();
+                $.post("{:U('Auth/do_editmanager')}",$form.serialize(),function (result) {
+                    layer.close(index_load);
+                    if(result.code==20000){
+                        layer.msg(result.message);
+                        setTimeout(function(){
+                            location.reload();
+                        },1000);
+                    }else{
+                        layer.msg(result.message);
+                    }
+                },"json");
+            }
+        })
+        $("a[action='deleteitem']").on("click",function () {
+            $this=$(this);
+            layer.confirm("删除时，管理的操作日志也会被删除，确定删除？",function (c_index) {
+                layer.close(c_index);
+                var load_index=layer.load();
+                var id=$this.data("id");
+                $.post("{:U('Auth/do_delmanager')}",{aid:id},function (result) {
+                    layer.close(load_index);
+                    if(result.code==20000){
+                        layer.msg(result.message);
+                        location.reload();
+                    }else{
+                        layer.msg(result.message);
+                    }
+                },"json");
+            })
+        })
+        $("#btnAddManager").on("click",function () {
+            $form=$("#commentForm");
+            if(validateadd($form)){
+                var index_load=layer.load();
+                $.post("{:U('Auth/do_addmanager')}",$form.serialize(),function (result) {
+                    layer.close(index_load);
+                    if(result.code==20000){
+                        layer.msg(result.message);
+                        setTimeout(function () {
+                            location.reload();
+                        },1000);
+                    }else{
+                        layer.msg(result.message);
+                    }
+                },"json");
+            }
+        })
+        function validateadd($form) {
+            return true;
+        }
+        function validateedit($form) {
+            return true;
+        }
+        function loadData($form,jsonStr){
+            //var obj = eval("("+jsonStr+")");
+            var obj=jsonStr;
+            var key,value,tagName,type,arr;
+            for(x in obj){
+                key = x;
+                value = obj[x];
+                $form.find("[name='"+key+"'],[name='"+key+"[]']").each(function(){
+                    tagName = $(this)[0].tagName;
+                    type = $(this).attr('type');
+                    if(tagName=='INPUT'){
+                        if(type=='radio'){
+                            $(this).attr('checked',$(this).val()==value);
+                        }else if(type=='checkbox'){
+                            arr = value.split(',');
+                            for(var i =0;i<arr.length;i++){
+                                if($(this).val()==arr[i]){
+                                    $(this).attr('checked',true);
+                                    break;
+                                }
+                            }
+                        }else{
+                            $(this).val(value);
+                        }
+                    }else if(tagName=='SELECT' || tagName=='TEXTAREA'){
+                        $(this).val(value);
+                    }
+
+                });
+            }
+        }
+    })
+</script>
+</body>
+</html>

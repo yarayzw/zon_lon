@@ -1,0 +1,577 @@
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script src="__JS__/admin/bootstrapValidator.js"></script>
+<script src="__JS__/admin/bootstrapValidator.min.js"></script>
+<script src="__JS__/admin/index.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        validator_user();
+    });
+
+    function initTable() {
+        //先销毁表格
+        $('#userListTable').bootstrapTable('destroy');
+        //初始化表格,动态从服务器加载数据
+        $("#userListTable").bootstrapTable({
+            url: '{:U("User/userListAjax")}', //获取数据的Servlet地址
+            striped: true,  //表格显示条纹
+            pagination: true, //启动分页
+            sortName: 'id',
+            pageSize: 15,  //每页显示的记录数
+            pageNumber:1, //当前第几页
+            pageList: [10, 15, 20, 25],  //记录数可选列表
+            search: false,
+            toolbar: '#list_search',
+            showColumns: true,  //显示下拉框勾选要显示的列
+            showRefresh: true,  //显示刷新按钮
+            sidePagination: "server", //表示服务端请求
+            //设置为undefined可以获取pageNumber，pageSize，searchText，sortName，sortOrder
+            //设置为limit可以获取limit, offset, search, sort, order
+            responseHandler:function(res){
+                //远程数据加载之前,处理程序响应数据格式,对象包含的参数: 我们可以对返回的数据格式进行处理
+                //在ajax后我们可以在这里进行一些事件的处理
+                return res.data;
+            },
+            queryParamsType : "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    //这里是在ajax发送请求的时候设置一些参数 params有什么东西，自己看看源码就知道了
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    sortName: params.sortName,
+                    sortOrder: params.sortOrder,
+                    account : $('#account').val(),
+                    nickname : $('#nickname').val(),
+                    phone : $('#phone').val(),
+                    province : $('#province').val(),
+                    city : $('#city').val(),
+                    district : $('#district').val(),
+                    };
+                return param;
+            },
+        onLoadSuccess: function(data){  //加载成功时执行
+            if(data.success==400){
+                layer.msg(data.message, {time : 1500, icon : 2});
+            }
+        },
+        onLoadError: function(){  //加载失败时执行
+            layer.msg("加载数据失败", {time : 1500, icon : 2});
+        },
+        columns: [
+            {
+                field: 'state',
+                checkbox: true,
+                align: 'center',
+                valign: 'middle'
+            }, {
+                title: 'ID',
+                field: 'id',
+                align: 'center',
+                valign: 'middle'
+            },
+            {
+                field: 'account',
+                title: '账户名',
+                sortable: true,
+                align: 'center'
+            },
+            {
+                field: 'title',
+                title: '角色',
+                sortable: true,
+                align: 'center'
+            },
+            {
+                field: 'nickname',
+                title: '昵称',
+                sortable: true,
+                align: 'center'
+            },
+            {
+                field: 'realname',
+                title: '姓名',
+                sortable: true,
+                align: 'center'
+            },
+            {
+                field: 'phone',
+                title: '电话',
+                sortable: true,
+                align: 'center'
+            },
+            {
+                field: 'areaid',
+                title: '区域',
+                align: 'left',
+                formatter: function(value,row,index){
+                    if(value != 0){
+                        return row.province+'-'+row.city+'-'+row.district;
+                    }else {
+                        return '未知';
+                    }
+                }
+            },
+            {
+                field: 'status',
+                title: '状态',
+                sortable: true,
+                align: 'center',
+                formatter: function(value,row,index){
+                    <if condition="check_auth(84) eq 1">
+                        if(value==1){
+                            var a = '<span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check" data_id="'+row.id+'" data_status="'+row.status+'" onclick="updeteStatus(this);"></i> </span>';
+                        }else {
+                            var a = '<span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close" data_id="'+row.id+'" data_status="'+row.status+'" onclick="updeteStatus(this);"></i> </span>';
+                        }
+                    <else />
+                    if(value==1){
+                        var a = '<span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check"  ></i> </span>';
+                    }else {
+                        var a = '<span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close" ></i> </span>';
+                    }
+                    </if>
+                    return a;
+                }
+            },{
+                field: 'operate',
+                title: '操作',
+                align: 'center',
+                formatter: function(value,row,index){
+                    var e = '';
+                    var d = '';
+                    var f = '';
+                    <if condition="check_auth(85) eq 1 ">
+                        if(row.id!=1) {
+                            e = '<a href="#" mce_href="#" data_from="editUser" data_id="' + row.id + '"  onclick="edit(this)" >编辑</a> ';
+                        }
+                    </if>
+                    <if condition="check_auth(85) eq 1">
+                        if(row.id!=1){
+                            d = '<a href="#" mce_href="#" onclick="del(\''+ row.id +'\')">删除</a> ';
+                        }
+                    </if>
+                    <if condition="check_auth(108) eq 1">
+                        if(row.id!=1) {
+                            f = '<a href="#" mce_href="#" data_from="editUserPassword" data_id="' + row.id + '" onclick="editPassword(this)">修改密码</a> ';
+                        }
+                    </if>
+                    return e+f+d;
+                }
+            }
+        ]
+    });
+    }
+
+    $(document).ready(function () {
+        //调用函数，初始化表格
+        initTable();
+
+        //当点击查询按钮的时候执行
+        $("#search").bind("click", initTable);
+    });
+    //搜索
+    function p_search() {
+
+        $("#userListTable").bootstrapTable('refresh');
+    }
+
+    /**
+     * 修改状态
+     * */
+    function updeteStatus(obj){
+        var id = $(obj).attr('data_id');
+        var status = $(obj).attr('data_status');
+
+        layer.confirm("确定修改？",function () {
+            $.ajax({
+                method: "post",
+                url: '{:U('User/editAdminiStatus')}',
+                data:{ 'id':id, 'status' : status },
+                dataType: 'JSON',
+                success: function(data){
+                    if (data.code == 200) {
+                        $("#userListTable").bootstrapTable('refresh');
+                        layer.msg(data.msg);
+                    } else {
+                        layer.msg(data.msg);
+                    }
+                },
+                error:function(){
+                    layer.msg('数据错误！');
+                }
+
+            });
+        });
+    }
+
+
+    /**
+    * 编辑详细信息
+    * */
+    function edit(obj){
+        var id = $(obj).attr('data_id');
+        var from = $(obj).attr('data_from');
+        $.ajax({
+            method: "post",
+            url: '{:U("User/editUser",array("act"=>display))}',
+            data:{ 'id':id, 'from' : $('#'+from).toJson() },
+            dataType: 'JSON',
+            success: function(data){
+                if (data.code == 200) {
+                    $('#edit_account').val(data.row.account);
+                    $('#edit_account').attr("disabled",true);
+                    $('#edit_role option').each(function () {
+                        if($(this).val()==data['row']['role_id']){
+                            $(this).attr('selected',true);
+                        }
+                    });
+//                    $('#edit_role').append("<option value='"+data['row']['role_id']+"'>"+data['row']['title']+"</option>");
+                    $('#edit_nickname').val(data.row.nickname);
+                    $('#edit_realname').val(data.row.realname);
+                    $('#edit_phone').val(data.row.phone);
+                    $('#edit_province').val(data.row.province_id);
+                    $('#edit_city').append("<option  selected='selected'  value='"+data['row']['city_id']+"'>"+data['row']['city_areaname']+"</option>");
+                    $('#edit_district').append("<option selected='selected' value='"+data['row']['district_id']+"'>"+data['row']['district_areaname']+"</option>");
+                } else {
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.msg('数据错误！');
+            }
+        });
+        layer.open({
+            type: 1,
+            title: '编辑',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['70%', '65%'],
+            content: $('#'+from),
+            btn: ['确定', '取消'], // 按钮
+            yes: function(index, layero){
+                $('#editUser').data('bootstrapValidator').destroy();
+                $('#editUser').data('bootstrapValidator', null);
+                $('#editUser').bootstrapValidator('validate');
+                var verify = $('#editUser').data('bootstrapValidator').isValid();
+                if(verify){
+                    layer.msg('确定编辑？', {
+                        time: 0 //不自动关闭
+                        ,btn: ['确定', '取消']
+                        ,yes: function(index){
+                            $.ajax({
+                                method: "post",
+                                url: '{:U("User/editUser",array("act"=>submit,"action"=>edit))}',
+                                data:{ 'id':id, 'from' : $('#'+from).toJson() },
+                                dataType: 'JSON',
+                                success: function(data){
+                                    if (data.code == 200) {
+                                        $("#userListTable").bootstrapTable('refresh');
+                                        layer.close(index);
+                                        layer.closeAll();
+                                        layer.msg(data.msg);
+                                    } else {
+                                        layer.msg(data.msg);
+                                    }
+                                },
+                                error:function(){
+                                    layer.msg('数据错误！');
+                                }
+                            });
+                        }
+                    });
+
+                }
+
+            }
+//            content: '{:U("User/editUser",array("id"=>'+id+',"act"=>display))}' //iframe的url
+        });
+    }
+
+
+    /**
+    * 加载角色下拉框
+    * */
+    function roleType(obj){
+        var select = $(obj).val();
+        if(select==null||select=='null'){
+            $.ajax({
+                method: "post",
+                url: '{:U("Role/getRoleAjax")}',
+                data:{ },
+                dataType: 'JSON',
+                success: function(data){
+                    if (data.code == 200) {
+                        $('#edit_role').empty();
+                        for(var i=0;i<data.num;i++){
+                            if(select != data['row'][i]['id']){
+                                $(obj).append("<option value='"+data['row'][i]['id']+"'>"+data['row'][i]['title']+"</option>");
+                            }
+                        }
+                    } else {
+                        layer.msg('数据错误！');
+                    }
+                },
+                error:function(){
+                    layer.msg('数据错误！');
+                }
+            });
+        }
+
+    }
+    //表单验证
+    function validator_user(){
+        $('#editUser').bootstrapValidator({
+            message: 'This value is not valid',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                edit_account: {
+                    message: '账户名验证失败',
+                    validators: {
+                        notEmpty: {
+                            message: '账户名不能为空'
+                        },
+                        stringLength: {
+                            min: 4,
+                            max: 18,
+                            message: '账户名长度必须在6到18位之间'
+                        },
+                        regexp: {
+                            regexp: /^[a-zA-Z0-9_]+$/,
+                            message: '账户名只能包含大写、小写、数字和下划线'
+                        }
+                    }
+                },
+                edit_role: {
+                    validators: {
+                        notEmpty: {
+                            message: '角色不能为空'
+                        }
+                    }
+                },
+                edit_nickname: {
+                    validators: {
+                        notEmpty: {
+                            message: '昵称不能为空'
+                        }
+                    }
+                },
+                edit_realname: {
+                    validators: {
+                        notEmpty: {
+                            message: '姓名不能为空'
+                        }
+                    }
+                },
+                edit_phone: {
+                    message: '手机号验证失败',
+                    validators: {
+                        notEmpty: {
+                            message: '手机号不能为空'
+                        },
+                        regexp: {
+                            regexp: /(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170\d{8}/,
+                            message: '请填写正确手机号'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+    * 修改管理员密码
+    * */
+    function editPassword(obj){
+        var user_id = $(obj).attr('data_id');
+        var from = $(obj).attr('data_from');
+        layer.open({
+            type: 1,
+            title: '修改密码',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['40%', '25%'],
+            content: $('#'+from),
+            btn: ['确定', '取消'], // 按钮
+            yes: function(index, layero){
+                layer.msg('确定修改？', {
+                    time: 0 //不自动关闭
+                    ,btn: ['确定', '取消']
+                    ,yes: function(index){
+                        $.ajax({
+                            method: "post",
+                            url: '{:U("User/editPassword")}',
+                            data:{ 'user_id':user_id, 'password' : $('#edit_password').val() },
+                            dataType: 'JSON',
+                            success: function(data){
+                                if (data.code == 200) {
+                                    layer.closeAll();
+                                    layer.msg(data.msg);
+                                } else {
+                                    layer.msg(data.msg);
+                                }
+                            },
+                            error:function(){
+                                layer.msg('数据错误！');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+    * 添加管理员
+    * */
+    function addUser(obj){
+
+        $('#edit_account').val('');
+        $('#edit_account').attr("disabled",false);
+//        $('#edit_role').empty();
+        $('#edit_nickname').val('');
+        $('#edit_realname').val('');
+        $('#edit_phone').val('');
+        var from = $(obj).attr('data_from');
+        layer.open({
+            type: 1,
+            title: '添加',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['70%', '65%'],
+            content: $('#'+from),
+            btn: ['确定', '取消'], // 按钮
+            yes: function(index, layero){
+                $('#editUser').bootstrapValidator(null);
+                $('#editUser').bootstrapValidator('validate');
+                var verify = $('#editUser').data('bootstrapValidator').isValid();
+                if(verify){
+                    layer.msg('确定添加？', {
+                        time: 0 //不自动关闭
+                        ,btn: ['确定', '取消']
+                        ,yes: function(index){
+                            $.ajax({
+                                method: "post",
+                                url: '{:U("User/editUser",array("act"=>submit,"action"=>add))}',
+                                data:{  'from' : $('#'+from).toJson() },
+                                dataType: 'JSON',
+                                success: function(data){
+                                    if (data.code == 200) {
+                                        $("#userListTable").bootstrapTable('refresh');
+                                        layer.close(index);
+                                        layer.closeAll();
+                                        layer.msg('添加成功!');
+                                    } else {
+                                        layer.msg('添加失败!');
+                                    }
+                                },
+                                error:function(){
+                                    layer.msg('数据错误！');
+                                }
+                            });
+                        }
+                    });
+
+                }
+
+            }
+//            content: '{:U("User/editUser",array("id"=>'+id+',"act"=>display))}' //iframe的url
+        });
+    }
+
+    /**
+    * 删除管理员
+    * */
+    function del(id){
+        layer.msg('确定删除？', {
+            time: 0 //不自动关闭
+            ,btn: ['确定', '取消']
+            ,yes: function(index){
+                $.ajax({
+                    method: "post",
+                    url: '{:U("User/editUser",array("act"=>submit,"action"=>del))}',
+                    data:{'id':id},
+                    dataType: 'JSON',
+                    success: function(data){
+                        if (data.code == 200) {
+                            $("#userListTable").bootstrapTable('refresh');
+                            layer.msg('删除成功!');
+                        } else {
+                            layer.msg('删除失败!');
+                        }
+                    },
+                    error:function(){
+                        layer.msg('数据错误！');
+                    }
+                });
+            }
+        });
+    }
+    /**
+     * 获取市
+     * */
+    function get_city(obj){
+        var provinceid = $(obj).val();
+        var city = $(obj).attr('data_city');
+        $.ajax({
+            type: 'post',
+            data:{
+                provinceid:provinceid
+            },
+            url: '{:U("UserInfo/getCity")}',
+            success:function(data) {
+                $("#edit_district").empty();
+                $("#edit_district").append("<option value='-1'>全部</option>");
+                $("#"+city).empty();
+                $("#"+city).append("<option value='-1'>全部</option>");
+                if(data.code==200){
+                    $.each(data.row, function() {
+                        $("#"+city).append("<option value='"+this.id+"'>"+this.areaname+"</option>");
+                    })
+                }else {
+                    layer.msg(data.msg);
+                }
+            },
+            dataType: "JSON",
+            error : function() {
+                layer.msg('数据错误！');
+            }
+        });
+    }
+
+    /**
+     * 获取区
+     * */
+    function getDistrict(obj){
+        var cityid = $(obj).val();
+        var district = $(obj).attr('data_district');
+        $.ajax({
+            type: 'post',
+            data:{
+                cityid : cityid
+            },
+            url: '{:U("UserInfo/getDistrict")}',
+            success:function(data) {
+                $("#"+district).empty();
+                $("#"+district).append("<option value='-1'>全部</option>");
+                if(data.code==200){
+                    $.each(data.row, function() {
+                        $("#"+district).append("<option value='"+this.id+"'>"+this.areaname+"</option>");
+                    })
+                }else {
+                    layer.msg(data.msg);
+                }
+            },
+            dataType: "JSON",
+            error : function() {
+                layer.msg('数据错误！');
+            }
+        });
+    }
+
+
+</script>

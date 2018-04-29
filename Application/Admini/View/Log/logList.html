@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <include file="Public/common_header"/>
+    <link href="__CSS__/admin/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+    <link href="__CSS__/admin/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+</head>
+<body>
+<style>
+    .bgcolor {
+        background: #F2F2F2;
+    }
+</style>
+<!-- Panel Other -->
+<div class="ibox float-e-margins">
+    <div class="ibox-title">
+        <h5>设备类型列表</h5>
+
+        <div class="ibox-tools">
+            <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+            </a>
+            <a class="close-link">
+                <i class="fa fa-times"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <div class="row row-lg">
+            <div class="col-sm-12">
+                <!-- Example Toolbar -->
+                <div class="example-wrap">
+                    <div class="example">
+                        <div class="btn-group hidden-xs" id="logListToolbar" role="group">
+
+                        </div>
+                        <table class="table table-hover" id="logList"
+                               data-pagination="true"
+                               data-show-refresh="true"
+                               data-show-toggle="true"
+                               data-showColumns="true">
+                        </table>
+                    </div>
+                </div>
+                <!-- End Example Toolbar -->
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <form id="list_search">
+        <fieldset>
+            表名: <input type="text" id="tablename" style="width: 80px;">&nbsp;&nbsp;
+            管理员账号: <input type="text" id="act_account" style="width: 80px;">&nbsp;&nbsp;
+            时间: <input type="text" class="laydate-icon" id="Q_times" style="width: 80px;width: 160px">&nbsp;&nbsp;
+            到: <input type="text" class="laydate-icon" id="E_times" style="width: 80px;width: 160px">&nbsp;&nbsp;
+            <button type="button" onclick="p_search();" class="btn">查询</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        </fieldset>
+    </form>
+</div>
+
+<include file="Public/common_footer"/>
+<include file="Log/logList_js"/>
+</body>
+<script>
+    laydate({
+        elem: '#Q_times',
+        format: 'YYYY-MM-DD hh:mm:ss', //日期格式
+        istime: true,
+        istoday: false,
+        min: '2016-01-01 00:00:00', //最小日期
+    });
+    laydate({
+        elem: '#E_times',
+        format: 'YYYY-MM-DD hh:mm:ss', //日期格式
+        istime: true,
+        istoday: false,
+        min: '2016-01-01 00:00:00', //最小日期
+    });
+</script>
+</html>

@@ -1,0 +1,408 @@
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script src="__JS__/admin/demo/laydate/laydate.js"></script>
+<script src="__JS__/admin/bootstrapValidator.js"></script>
+<script src="__JS__/admin/bootstrapValidator.min.js"></script>
+<script src="__JS__/admin/index.js"></script>
+<script type="text/javascript">
+    var $faciListTable = $('#faciListTable');
+
+    function initTable() {
+        $faciListTable.bootstrapTable('destroy');
+        $faciListTable.bootstrapTable({
+            url: '{:U("Facility/facilityList")}', //获取数据的Servlet地址
+            striped: true,  //表格显示条纹
+            pagination: true, //启动分页
+            sortName: 'id',
+            pageSize: 15,  //每页显示的记录数
+            pageNumber:1, //当前第几页
+            pageList: [10, 15, 20, 25],  //记录数可选列表
+            search: false,
+            striped: true, //隔行变色
+            toolbar: '#list_search_faci',
+            showColumns: false,  //显示下拉框勾选要显示的列
+            showRefresh: true,  //显示刷新按钮
+            sidePagination: "server", //表示服务端请求
+            responseHandler:function(res){
+                return res.data;
+            },
+            queryParamsType : "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    //这里是在ajax发送请求的时候设置一些参数 params有什么东西，自己看看源码就知道了
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    sortName: params.sortName,
+                    sortOrder: params.sortOrder,
+                    address : $('#address').val(),
+                    action : 'getListAjax'
+                };
+                return param;
+            },
+            onLoadError: function(){  //加载失败时执行
+                layer.msg("加载数据失败", {time : 1500, icon : 2});
+            },
+            columns:[
+                {
+                    title: 'ID',
+                    field: 'id',
+                    align: 'center',
+                    valign: 'middle'
+                },
+                {
+                    title: '装置地址',
+                    field: 'equipment_address',
+                    align: 'center',
+                    valign: 'middle',
+                    formatter: function(value,row,index){
+                        return value;
+                    }
+                },
+                {
+                    title: '添加时间',
+                    field: 'createtime',
+                    align: 'center',
+                    valign: 'middle',
+                    formatter: function(value,row,index){
+                        return value;
+                    }
+                },
+
+                {
+                    field: 'is_del',
+                    title: '是否启用',
+                    sortable: true,
+                    align: 'center',
+                    formatter: function(value,row,index){
+                    <if condition="check_auth(84) eq 1">
+                            if(value==1){
+                                var a = '<span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check" data_id="'+row.id+'" data_status="'+row.is_del+'" onclick="updeteStatus(this);"></i> </span>';
+                            }else {
+                                var a = '<span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close" data_id="'+row.id+'" data_status="'+row.is_del+'" onclick="updeteStatus(this);"></i> </span>';
+                            }
+                    <else />
+                        if(value==1){
+                            var a = '<span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check"  ></i> </span>';
+                        }else {
+                            var a = '<span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close" ></i> </span>';
+                        }
+                    </if>
+                        return a;
+                    }
+                },
+                {
+                    field: 'operate',
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value,row,index){
+                        var e='';
+                        var d='';
+                        <if condition="check_auth(93) eq 1">
+                            e = '<a href="#" mce_href="#" data_from="editFacility" data_id="'+row.id+'"  onclick="edit(this)" >编辑</a> ';
+                        </if>
+
+                        <if condition="check_auth(93) eq 1">
+                            d = '<a href="#" mce_href="#" data_id="'+row.id+'"  onclick="del(this)">删除</a> ';
+                        </if>
+                        return e+d;
+                    }
+                }
+            ]
+
+        });
+    }
+
+    /**
+     * 将时间转换为时间戳
+     * */
+    function gettimes(time) {
+        var times = new Date(time.replace(/-/g,'/'));
+        return times;
+    }
+
+    $(document).ready(function () {
+        //调用函数，初始化表格
+        initTable();
+        $("#edit_area").keydown(function(e) {
+            digitInput($(this), e);
+        });
+    });
+    //搜索
+    function p_search() {
+        $faciListTable.bootstrapTable('refresh');
+    }
+    var $boundUser = $('#addFaciTable');
+    function addBound_search(){
+        $boundUser.bootstrapTable('refresh');
+    }
+
+    /**
+    * 修改设备信息
+    * */
+    function edit(obj){
+
+        var id = $(obj).attr('data_id');
+        var from = $(obj).attr('data_from');
+        $.ajax({
+            type: "post",
+            url: '{:U("Facility/editFacility",array("act"=>display,"action"=>edit))}',
+            data:{ 'id':id, 'from' : $('#'+from).toJson() },
+            dataType: 'JSON',
+            success: function(data){
+                if (data.code == 200) {
+                    $('#equipment_address').val(data.row.equipment_address);
+                    $('#hidden_equipment_address').val(data.row.equipment_address);
+                    $('#f_id').val(data.row.id);
+                    if(data.row.is_del==1){
+                        $('#is_del1').attr('checked', 'checked');
+                    }else {
+                        $('#is_del2').attr('checked', 'checked');
+                    }
+                } else {
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.msg('数据错误！');
+            }
+        });
+
+        layer.open({
+            type: 1,
+            title: '编辑',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['70%', '75%'],
+            content: $('#'+from),
+            btn: ['确定', '取消'], // 按钮
+            yes: function(index, layero){
+                if($('#equipment_address').val()==''){
+                    layer.msg('请填写装置地址！');
+                    return false;
+                }
+                    layer.msg('确定编辑？', {
+                        time: 0 //不自动关闭
+                        ,btn: ['确定', '取消']
+                        ,yes: function(index){
+                            $.ajax({
+                                type: "post",
+                                url: '{:U("Facility/editFacility",array("act"=>submit,"action"=>edit))}',
+                                data:{ 'id':id, 'from' : $('#'+from).toJson() },
+                                dataType: 'JSON',
+                                success: function(data){
+                                    if (data.code == 200) {
+                                        $faciListTable.bootstrapTable('refresh');
+                                        layer.close(index);
+                                        layer.closeAll();
+                                        layer.msg(data.msg);
+                                    } else {
+                                        layer.msg(data.msg);
+                                    }
+                                },
+                                error:function(){
+                                    layer.msg('数据错误！');
+                                }
+                            });
+                        }
+                    });
+
+                }
+        });
+    }
+
+
+    /**
+    * 添加设备
+    * */
+    function addFacility(obj){
+        $('#regtime_div').hide();
+        $('#regaddress_div').hide();
+        var from = $(obj).attr('data_from');
+        layer.open({
+            type: 1,
+            title: '添加设备',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['70%', '60%'],
+            content: $('#'+from),
+            btn: ['确定', '取消'], // 按钮
+            yes: function(index, layero){
+                if($('#edit_serialnumber').val()==''){
+                    layer.msg('请填写设备编码！');
+                    return false;
+                }
+                if($('#edit_imei').val()==''){
+                    layer.msg('请填写IMEI号！');
+                    return false;
+                }
+                if($('#edit_district').val()=='-1'||$('#edit_district').val()==-1){
+                    layer.msg('请填写完整区域！');
+                    return false;
+                }
+                layer.msg('确定添加？', {
+                    time: 0 //不自动关闭
+                    ,btn: ['确定', '取消']
+                    ,yes: function(index){
+                        $.ajax({
+                            type: "post",
+                            url: '{:U("Facility/editFacility",array("act"=>submit,"action"=>add))}',
+                            data:{  'from' : $('#'+from).toJson() },
+                            dataType: 'JSON',
+                            success: function(data){
+                                if (data.code == 200) {
+                                    $faciListTable.bootstrapTable('refresh');
+                                    layer.close(index);
+                                    layer.closeAll();
+                                    layer.msg(data.msg);
+                                } else {
+                                    layer.msg(data.msg);
+                                }
+                            },
+                            error:function(){
+                                layer.msg('数据错误！');
+                            }
+                        });
+                    }
+                });
+
+            }
+        });
+    }
+
+    /**
+     * 删除设备
+     * */
+    function del(obj){
+        var id = $(obj).attr('data_id');
+        layer.msg('确定删除？', {
+            time: 0 //不自动关闭
+            ,btn: ['确定', '取消']
+            ,yes: function(index){
+                $.ajax({
+                    method: "post",
+                    url: '{:U("Facility/editFacility",array("act"=>submit,"action"=>del))}',
+                    data:{'id':id},
+                    dataType: 'JSON',
+                    success: function(data){
+                        if (data.code == 200) {
+                            $faciListTable.bootstrapTable('refresh');
+                            layer.msg('删除成功!');
+                        } else {
+                            layer.msg('删除失败!');
+                        }
+                    },
+                    error:function(){
+                        layer.msg('数据错误！');
+                    }
+                });
+            }
+        });
+    }
+
+
+    /**
+     * 获取市
+     * */
+    function get_city(obj){
+        var provinceid = $(obj).val();
+        var city = $(obj).attr('data_city');
+        $.ajax({
+            type: 'post',
+            data:{
+                provinceid:provinceid
+            },
+            url: '{:U("UserInfo/getCity")}',
+            success:function(data) {
+                $("#edit_district").empty();
+                $("#edit_district").append("<option value='-1'>全部</option>");
+                $("#"+city).empty();
+                $("#"+city).append("<option value='-1'>全部</option>");
+                if(data.code==200){
+                    $.each(data.row, function() {
+                        $("#"+city).append("<option value='"+this.id+"'>"+this.areaname+"</option>");
+                    })
+                }else {
+                    layer.msg(data.msg);
+                }
+            },
+            dataType: "JSON",
+            error : function() {
+                layer.msg('数据错误！');
+            }
+        });
+    }
+
+    /**
+     * 获取区
+     * */
+    function getDistrict(obj){
+        var cityid = $(obj).val();
+        var district = $(obj).attr('data_district');
+        $.ajax({
+            type: 'post',
+            data:{
+                cityid : cityid
+            },
+            url: '{:U("UserInfo/getDistrict")}',
+            success:function(data) {
+                $("#"+district).empty();
+                $("#"+district).append("<option value='-1'>全部</option>");
+                if(data.code==200){
+                    $.each(data.row, function() {
+                        $("#"+district).append("<option value='"+this.id+"'>"+this.areaname+"</option>");
+                    })
+                }else {
+                    layer.msg(data.msg);
+                }
+            },
+            dataType: "JSON",
+            error : function() {
+                layer.msg('数据错误！');
+            }
+        });
+    }
+
+
+    /**
+    * 将时间戳转换为日期
+    * */
+    function timeGo(value){
+        var value_time = parseInt(value);
+        var time = new Date(value_time * 1000);
+        var ymdhis = "";
+        ymdhis += time.getUTCFullYear() + "-";
+        ymdhis += (time.getUTCMonth() + 1) + "-";
+        ymdhis += time.getUTCDate();
+        ymdhis += " " + time.getUTCHours() + ":";
+        ymdhis += time.getUTCMinutes() + ":";
+        ymdhis += time.getUTCSeconds();
+        return ymdhis;
+    }
+
+    /*
+    * 限制只能输入数字
+    * */
+    function prevent(e) {
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+    }
+    function digitInput(el, e) {
+        var ee = e || window.event; // FF、Chrome IE下获取事件对象
+        var c = e.charCode || e.keyCode; //FF、Chrome IE下获取键盘码
+        //var txt = $('label').text();
+        //$('label').text(txt + ' ' + c);
+        var val = el.val();
+        if (c == 110 || c == 190){ // 110 (190) - 小(主)键盘上的点
+            (val.indexOf(".") >= 0 || !val.length) && prevent(e); // 已有小数点或者文本框为空，不允许输入点
+        } else {
+            if ((c != 8 && c != 46 && // 8 - Backspace, 46 - Delete
+                (c < 37 || c > 40) && // 37 (38) (39) (40) - Left (Up) (Right) (Down) Arrow
+                (c < 48 || c > 57) && // 48~57 - 主键盘上的0~9
+                (c < 96 || c > 105)) // 96~105 - 小键盘的0~9
+                || e.shiftKey) { // Shift键，对应的code为16
+                prevent(e); // 阻止事件传播到keypress
+            }
+        }
+    }
+
+</script>
