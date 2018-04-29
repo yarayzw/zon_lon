@@ -27,21 +27,26 @@ class OperateController extends PublicController
         $address_six_teen = substr($string, 6, 4);
         $address = base_convert($address_six_teen, 16, 10);
         // 判断数据库中是否该设备 没有则报错
-        $data = EquipmentListModel::getModelByAddressNo((string)$address);
+        $data = EquipmentListModel::getModelByAddressNo($address);
         if (!$data) {
             ErrorListModel::insertInformation('No address of the device was found. the NO is ' . $address, ErrorListModel::ERROR_LOGIN);
-            return null;
-        }
-        // 组合对时数据包
-        $data_content = $address_six_teen . SocketController::CHECK_TIME . dechex(date('Y') % 256) . dechex(floor(date('Y') / 256)) . dechex(date('m')) . dechex(date('d')) . dechex(date('H')) . dechex(date('i')) . dechex(date('s'));
-        $crc_string = self::crc16($data_content);
-        // 计算帧长
-        $frame_length  = dechex(strlen($data_content . $crc_string) / 2);
-        $frame_header = SocketController::FRAME_HEADER;
-        // 拼接数据
-        $post_data = "<TX{$frame_header}{$frame_length}{$data_content}{$crc_string}>";
-        if (socket_write($accept_resource, strtoupper($post_data), strlen($post_data)) === false) {
-            ErrorListModel::insertInformation('Sending time to failure. the data is ' . strtoupper($post_data) . ' return message: ' . socket_strerror(socket_last_error()), ErrorListModel::ERROR_CHECK_TIME );
+            socket_close($accept_resource);
+        } else {
+            // 有效数据包
+            $data_content = dechex(date('Y') % 256) . dechex(floor(date('Y') / 256)) . dechex(date('m')) . dechex(date('d')) . dechex(date('H')) . dechex(date('i')) . dechex(date('s'));
+            // 数据长度计算
+            $data_length = dechex(strlen($data_content) / 2);
+            // 组合对时数据包 地址 功能码 数据长度
+            $data_content = $address_six_teen . SocketController::CHECK_TIME . $data_length .  dechex(date('Y') % 256) . dechex(floor(date('Y') / 256)) . dechex(date('m')) . dechex(date('d')) . dechex(date('H')) . dechex(date('i')) . dechex(date('s'));
+            $crc_string = self::crc16($data_content);
+            // 计算帧长
+            $frame_length  = dechex(strlen($data_content . $crc_string) / 2);
+            $frame_header = SocketController::FRAME_HEADER;
+            // 拼接数据 帧头 帧长 数据包 crc校验码
+            $post_data = "<TX{$frame_header}{$frame_length}{$data_content}{$crc_string}>";
+            if (socket_write($accept_resource, strtoupper($post_data), strlen($post_data)) === false) {
+                ErrorListModel::insertInformation('Sending time to failure. the data is ' . strtoupper($post_data) . ' return message: ' . socket_strerror(socket_last_error()), ErrorListModel::ERROR_CHECK_TIME );
+            }
         }
     }
 
