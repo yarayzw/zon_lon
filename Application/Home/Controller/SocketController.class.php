@@ -25,6 +25,7 @@ class SocketController extends PublicController
     // 连接socket
     public function connectSock()
     {
+        set_time_limit(0);
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) or die("Could not create socket.\n");
         if (socket_bind($socket, $this->ip, $this->port) == false) {
            ErrorListModel::insertInformation('server bind fail:' . '（'.json_encode($socket).'）' . socket_strerror(socket_last_error()));
@@ -46,16 +47,15 @@ class SocketController extends PublicController
             /*socket_accept的作用就是接受socket_bind()所绑定的主机发过来的套接流*/
             if ($accept_resource !== false) {
                 /*读取客户端传过来的资源，并转化为字符串*/
-                $string = str_replace('\\x', '', socket_read($accept_resource, 4096));
-                // print_r($string);
+                $string = socket_read($accept_resource, 4096);
                 // 验证crc校验码是否正确
                 $verify_string = substr($string, 6, -4);
                 $crc_string = substr($string, -4);
                 $verify_crc = $this->crc16($verify_string);
-                // if ($crc_string != $verify_crc) ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
+                if ($crc_string != $verify_crc) ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
                 /*socket_read的作用就是读出socket_accept()的资源并把它转化为字符串*/
                 if ($string != false) {
-                    $this->functionHandle($string, $socket);
+                    $this->functionHandle($string, $accept_resource);
                 } else {
                     ErrorListModel::insertInformation('socket_read is fail');
                 }
@@ -67,19 +67,19 @@ class SocketController extends PublicController
 
     /**
      * 截取16进制功能码 对方法进行分发
-     * @param $string
-     * @param $socket
+     * @param string $string
+     * @param $accept_resource
      * @return string
      */
-    public function functionHandle(string $string, $socket)
+    public function functionHandle(string $string, $accept_resource)
     {
         $fun_string = substr($string, 10, 2);
         switch ($fun_string) {
             case self::LOGIN:
-                OperateController::login($string, $socket);
+                (new OperateController)->login($string, $accept_resource);
                 break;
             case self::HEART_JUMP:
-                (new OperateController())->heartbeat($string);
+                (new OperateController)->heartbeat($string);
                 break;
             case self::READ_MEASUREMENT:
                 //TODO::读测量数据
@@ -91,7 +91,5 @@ class SocketController extends PublicController
                 ErrorListModel::insertInformation('Getting the error of the function code');
                 return '';
         }
-
     }
-
 }
