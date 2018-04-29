@@ -56,7 +56,6 @@ class OperateController extends PublicController
      * @return [type]         [description]
      */
     public function heartbeat($string = ''){
-        $string = 'EB901A000202xx300300420060000701014E14FB18C4506BE15F0XXXX';
         /**
          * 字符串是否为空
          */
@@ -76,24 +75,21 @@ class OperateController extends PublicController
         else{
             $data['equipment_id'] = (int)$info['id'];//设备Id
             $data['createtime'] = (int)time();//创建时间
+            $data['signal_percentage'] = base_convert(substr($string, 14, 2), 16, 10);//信号百分比
             $data['signal_percentage'] = empty($data['signal_percentage']) ? '' : $data['signal_percentage'];
             $data['container_type'] = base_convert(substr($string, 16, 2), 16, 10);//容器星号
             $data['container_type'] = empty($data['container_type']) ? '' : $data['container_type'];
-            $data['container_use_percentage'] = base_convert(substr($string, 18, 4), 16, 10);//容器使用百分比
+            $data['container_use_percentage'] = base_convert(substr($string, 18, 2), 16, 10);//容器使用百分比
             $data['container_use_percentage'] = empty($data['container_use_percentage']) ? '' : (double)$data['container_use_percentage'];//容器使用百分比
-            $data['temperature'] = base_convert(substr($string, 22, 4), 16, 10);//温度
+            $data['temperature'] = base_convert(substr($string, 20, 4), 16, 10);//温度
             $data['temperature'] = empty($data['temperature']) ? '' : $data['temperature'];
-            $data['humidity'] = base_convert(substr($string, 26, 4), 16, 10);//湿度
+            $data['humidity'] = base_convert(substr($string, 24, 4), 16, 10);//湿度
             $data['humidity'] = empty($data['humidity']) ? '' : (double)$data['humidity'];
-            $data['dip_angle'] = base_convert(substr($string, 30, 4), 16, 10);//倾角
+            $data['dip_angle'] = base_convert(substr($string, 28, 4), 16, 10);//倾角
             $data['dip_angle'] = empty($data['dip_angle']) ? '' : (double)$data['dip_angle'];
-            $data['latitude'] = base_convert(substr($string, 45, 8), 16, 10);//经度
-            $data['latitude'] = empty($data['latitude']) ? '' : $data['latitude'];
-            $data['latitude'] = $this->string_before_add($data['latitude'], -6, '.');
-            $data['longitude'] = base_convert(substr($string, 36, 7), 16, 10);//维度
-            $data['longitude'] = empty($data['longitude']) ? '' : $data['longitude'];
-            $data['longitude'] = $this->string_before_add($data['longitude'], -6, '.');
-            $data['heartbeat'] = json_encode($data);//心跳包数据
+            $data['latitude'] = (int)substr($string, -22, -14) . '.' . substr($string, -14, -6);//经度
+            $data['longitude'] = (int)substr($string, -40, -32) . '.' . substr($string, -32, -24);//维度
+            $data['heartbeat'] = $string;//心跳包数据
             CommanListModel::insertCommand($data);
         }
     }

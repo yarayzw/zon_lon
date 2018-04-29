@@ -12,7 +12,7 @@ use Home\Model\ErrorListModel;
 
 class SocketController extends PublicController
 {
-    private $ip = '127.0.0.1';//172.18.195.128  120.79.183.103
+    private $ip = '0.0.0.0';//172.18.195.128  120.79.183.103   127.0.0.1
     private $port = 8792;
     const FRAME_HEADER = 'EB90';
     const LOGIN = '01';
