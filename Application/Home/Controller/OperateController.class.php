@@ -89,9 +89,22 @@ class OperateController extends PublicController
             $data['longitude'] = empty($data['longitude']) ? '' : $data['longitude'];
             $data['longitude'] = $this->string_before_add($data['longitude'], -6, '.');
             $data['heartbeat'] = json_encode($data);//心跳包数据
-            // var_dump($data);
-            // exit;
-            var_dump(CommanListModel::insertCommand($data));
+            CommanListModel::insertCommand($data);
         }
     }
+
+    /**
+     * [data_statistics 数据统计]
+     * @return [type] [description]
+     *
+     * 需要展示数据：
+     * 容器类型：长宽高
+     */
+    public function data_statistics(){
+        $data = I('request.');
+        $where_data['start_time'] = !$this->is_timestamp($data['start_time']) ? 0 : $data['start_time'];
+        $where_data['end_time'] = !$this->is_timestamp($data['end_time']) ? 0 : $data['end_time'];
+        var_export($where_data);
+    }
+
 }

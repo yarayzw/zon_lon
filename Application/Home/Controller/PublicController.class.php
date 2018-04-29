@@ -123,4 +123,14 @@ class PublicController extends Controller
         //返回结果
         return $new_string;
     }
+
+    /**
+     * [is_timestamp 时间戳格式是否正确]
+     * @param  [type]  $timestamp [description]
+     * @return boolean            [description]
+     */
+    protected function is_timestamp($timestamp) {
+        if(strtotime(date('m-d-Y H:i:s',$timestamp)) === $timestamp) return $timestamp;
+        else return false;
+    }
 }
