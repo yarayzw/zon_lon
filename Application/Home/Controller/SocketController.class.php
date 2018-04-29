@@ -12,7 +12,7 @@ use Home\Model\ErrorListModel;
 
 class SocketController extends PublicController
 {
-    private $ip = '0.0.0.0';//172.18.195.128  120.79.183.103
+    private $ip = '127.0.0.1';//172.18.195.128  120.79.183.103
     private $port = 8792;
     const FRAME_HEADER = 'EB90';
     const LOGIN = '01';
@@ -37,6 +37,8 @@ class SocketController extends PublicController
         if (socket_listen($socket, 4) == false) {
             ErrorListModel::insertInformation('server listen fail:' . socket_strerror(socket_last_error()));
         }
+        // 非阻塞
+        socket_set_block($socket);
         // 让服务器无限获取客户端传过来的信息
         $this->getInformation($socket);
     }
@@ -51,11 +53,15 @@ class SocketController extends PublicController
             if ($accept_resource !== false) {
                 /*读取客户端传过来的资源，并转化为字符串*/
                 $string = socket_read($accept_resource, 4096);
+                echo $string . PHP_EOL;
                 // 验证crc校验码是否正确
-                $verify_string = substr($string, 6, -4);
                 $crc_string = substr($string, -4);
-                $verify_crc = $this->crc16($verify_string);
-                if ($crc_string != $verify_crc) ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
+                $verify_crc = $this->crc16(substr($string, 6, -4));
+                if ($crc_string != $verify_crc) {
+                    ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
+                    socket_close($accept_resource);
+                    continue;
+                }
                 /*socket_read的作用就是读出socket_accept()的资源并把它转化为字符串*/
                 if ($string != false) {
                     $this->functionHandle($string, $accept_resource);
@@ -72,9 +78,8 @@ class SocketController extends PublicController
      * 截取16进制功能码 对方法进行分发
      * @param string $string
      * @param $accept_resource
-     * @return string
      */
-    public function functionHandle(string $string, $accept_resource)
+    public function functionHandle( $string, $accept_resource)
     {
         $fun_string = substr($string, 10, 2);
         switch ($fun_string) {
@@ -91,8 +96,9 @@ class SocketController extends PublicController
                 //TODO::读定值数据
                 break;
             default:
-                ErrorListModel::insertInformation('Getting the error of the function code');
-                return '';
+                ErrorListModel::insertInformation('Getting the error of the function code. The function code is ' . $fun_string);
+                socket_close($accept_resource);
+                break;
         }
     }
 }

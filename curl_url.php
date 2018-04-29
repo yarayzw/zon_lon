@@ -15,8 +15,7 @@
         curl_setopt ( $curl, CURLOPT_CONNECTTIMEOUT_MS, 0 );
         curl_setopt ( $curl, CURLOPT_POST, 1 );  
         curl_setopt ( $curl, CURLOPT_RETURNTRANSFER, 1 );  
-        curl_setopt ( $curl, CURLOPT_POSTFIELDS, $class->getPostParam() );  
-        curl_setopt ( $curl, CURLOPT_TIMEOUT, $timeout);  
+        curl_setopt ( $curl, CURLOPT_TIMEOUT, 0);
         curl_setopt ( $curl, CURLOPT_SSL_VERIFYHOST, false);  
         curl_setopt ( $curl, CURLOPT_SSL_VERIFYPEER, false);  
         curl_setopt ( $curl, CURLOPT_HEADER, true);  
