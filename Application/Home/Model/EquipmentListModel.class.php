@@ -19,7 +19,10 @@ class EquipmentListModel extends Model
     public static function getModelByAddressNo($address_no)
     {
         $model = M('equipment_list');
-        $condition = ['equipment_address' => $address_no];
+        $condition = [
+            'equipment_address' => $address_no,
+            'is_del' => 1
+        ];
         $data = $model->where($condition)->find();
         return $data;
     }

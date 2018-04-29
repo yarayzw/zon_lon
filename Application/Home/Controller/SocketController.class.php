@@ -47,15 +47,14 @@ class SocketController extends PublicController
             if ($accept_resource !== false) {
                 /*读取客户端传过来的资源，并转化为字符串*/
                 $string = str_replace('\\x', '', socket_read($accept_resource, 4096));
-                // print_r($string);
                 // 验证crc校验码是否正确
                 $verify_string = substr($string, 6, -4);
                 $crc_string = substr($string, -4);
                 $verify_crc = $this->crc16($verify_string);
-                // if ($crc_string != $verify_crc) ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
+                if ($crc_string != $verify_crc) ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
                 /*socket_read的作用就是读出socket_accept()的资源并把它转化为字符串*/
                 if ($string != false) {
-                    $this->functionHandle($string, $socket);
+                    $this->functionHandle($string, $accept_resource);
                 } else {
                     ErrorListModel::insertInformation('socket_read is fail');
                 }
@@ -67,19 +66,19 @@ class SocketController extends PublicController
 
     /**
      * 截取16进制功能码 对方法进行分发
-     * @param $string
-     * @param $socket
+     * @param string $string
+     * @param $accept_resource
      * @return string
      */
-    public function functionHandle(string $string, $socket)
+    public function functionHandle(string $string, $accept_resource)
     {
         $fun_string = substr($string, 10, 2);
         switch ($fun_string) {
             case self::LOGIN:
-                OperateController::login($string, $socket);
+                (new OperateController)->login($string, $accept_resource);
                 break;
             case self::HEART_JUMP:
-                (new OperateController())->heartbeat($string);
+                (new OperateController)->heartbeat($string);
                 break;
             case self::READ_MEASUREMENT:
                 //TODO::读测量数据

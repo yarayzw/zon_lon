@@ -18,20 +18,18 @@ class OperateController extends PublicController
     /**
      * 登录 对时
      * @param $string
-     * @param $socket
+     * @param $accept_resource
      * @return null
      */
-    public static function login($string, $socket)
+    public function login($string, $accept_resource)
     {
         // 地址的四位的16进制数据
         $address_six_teen = substr($string, 6, 4);
         $address = base_convert($address_six_teen, 16, 10);
-
         // 判断数据库中是否该设备 没有则报错
         $data = EquipmentListModel::getModelByAddressNo((string)$address);
-
         if (!$data) {
-            ErrorListModel::insertInformation('No address of the device was found', ErrorListModel::ERROR_LOGIN);
+            ErrorListModel::insertInformation('No address of the device was found. the NO is ' . $address, ErrorListModel::ERROR_LOGIN);
             return null;
         }
         // 组合对时数据包
@@ -42,8 +40,8 @@ class OperateController extends PublicController
         $frame_header = SocketController::FRAME_HEADER;
         // 拼接数据
         $post_data = "<TX{$frame_header}{$frame_length}{$data_content}{$crc_string}>";
-        if (socket_write($socket, $post_data, strlen($post_data)) === false) {
-            ErrorListModel::insertInformation('Sending time to failure. the data is ' . $post_data, ErrorListModel::ERROR_CHECK_TIME);
+        if (socket_write($accept_resource, strtoupper($post_data), strlen($post_data)) === false) {
+            ErrorListModel::insertInformation('Sending time to failure. the data is ' . strtoupper($post_data) . ' return message: ' . socket_strerror(socket_last_error()), ErrorListModel::ERROR_CHECK_TIME );
         }
     }
 
