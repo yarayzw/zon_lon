@@ -47,7 +47,7 @@ class SocketController extends PublicController
             /*socket_accept的作用就是接受socket_bind()所绑定的主机发过来的套接流*/
             if ($accept_resource !== false) {
                 /*读取客户端传过来的资源，并转化为字符串*/
-                $string = str_replace('\\x', '', socket_read($accept_resource, 4096));
+                $string = socket_read($accept_resource, 4096);
                 // 验证crc校验码是否正确
                 $verify_string = substr($string, 6, -4);
                 $crc_string = substr($string, -4);
@@ -91,7 +91,5 @@ class SocketController extends PublicController
                 ErrorListModel::insertInformation('Getting the error of the function code');
                 return '';
         }
-
     }
-
 }
