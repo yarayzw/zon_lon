@@ -93,11 +93,8 @@ class PublicController extends Controller
                 }
             }
         }
-        $more_data = strlen(dechex(floor($crc % 256))) < 2  ? '0' . dechex($crc % 256)  : dechex($crc % 256);
-        $less_data = strlen(dechex(floor($crc / 256))) < 2  ? '0' . dechex($crc / 256)  : dechex($crc / 256);
-        
-        // $more_data = dechex($crc % 256) < 10  ? '0' . dechex($crc % 256)  : dechex($crc % 256);
-        // $less_data = dechex(floor($crc / 256)) < 10  ? dechex($crc / 256) . '0' : dechex($crc / 256);
+        $more_data = dechex($crc % 256) < 10  ? '0' . dechex($crc % 256)  : dechex($crc % 256);
+        $less_data = dechex(floor($crc / 256)) < 10  ? dechex($crc / 256) . '0' : dechex($crc / 256);
         return strtoupper($more_data . $less_data);
     }
 
