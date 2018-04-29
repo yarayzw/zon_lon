@@ -1,0 +1,399 @@
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script src="__JS__/admin/bootstrapValidator.js"></script>
+<script src="__JS__/admin/bootstrapValidator.min.js"></script>
+<script src="__JS__/admin/index.js"></script>
+<script type="text/javascript">
+    var $facilityTypeList = $('#facilityTypeList');
+    $(document).ready(function() {
+    });
+    function initTable() {
+        //先销毁表格
+        $facilityTypeList.bootstrapTable('destroy');
+        //初始化表格,动态从服务器加载数据
+        $facilityTypeList.bootstrapTable({
+                    url: '{:U("Facility/facilityTypeList",array("display"=>ajax))}', //获取数据的Servlet地址
+                striped: true,  //表格显示条纹
+                pagination: true, //启动分页
+                sortName: 'id',
+                pageSize: 15,  //每页显示的记录数
+                pageNumber:1, //当前第几页
+                pageList: [10, 15, 20, 25],  //记录数可选列表
+                search: false,
+                toolbar: '#list_search',
+                showColumns: true,  //显示下拉框勾选要显示的列
+                showRefresh: true,  //显示刷新按钮
+                sidePagination: "server", //表示服务端请求
+            //设置为undefined可以获取pageNumber，pageSize，searchText，sortName，sortOrder
+            //设置为limit可以获取limit, offset, search, sort, order
+                responseHandler:function(res){
+            //远程数据加载之前,处理程序响应数据格式,对象包含的参数: 我们可以对返回的数据格式进行处理
+            //在ajax后我们可以在这里进行一些事件的处理
+            return res.data;
+        },
+        queryParamsType : "undefined",
+                queryParams: function queryParams(params) {   //设置查询参数
+            var param = {
+                //这里是在ajax发送请求的时候设置一些参数 params有什么东西，自己看看源码就知道了
+                pageNumber: params.pageNumber,
+                pageSize: params.pageSize,
+                sortName: params.sortName,
+                sortOrder: params.sortOrder,
+                facname : $('#facname').val(),
+                status : $('#status').val(),
+
+            };
+            return param;
+        },
+        onLoadSuccess: function(data){  //加载成功时执行
+//            alert("加载成功"+data);
+            if(data.success==400){
+                layer.msg(data.message, {time : 1500, icon : 2});
+            }
+        },
+        onLoadError: function(){  //加载失败时执行
+            layer.msg("加载数据失败", {time : 1500, icon : 2});
+        },
+        columns: [
+            {
+                title: 'ID',
+                field: 'id',
+                align: 'center',
+                valign: 'middle'
+            },
+            {
+                field: 'facname',
+                title: '设备名称',
+                sortable: true,
+                align: 'center'
+            },
+            {
+                field: 'type',
+                title: '类型名称',
+                sortable: true,
+                align: 'center',
+                formatter: function(value,row,index){
+                    var type = '';
+                    if(value==1){
+                        type = '双系统';
+                    }else if(value==2){
+                        type = '单系统';
+                    }else if(value==3){
+                        type = '家用机';
+                    }else if(value==4){
+                        type = '水冷柜机';
+                    }else if(value==5){
+                        type = '四系统';
+                    }else {
+                        type = '未知';
+                    }
+                    return type;
+                }
+            },
+            {
+                field: 'status',
+                title: '状态',
+                sortable: true,
+                align: 'center',
+                formatter: function(value,row,index){
+                    <if condition="check_auth(91) eq 1">
+                        if(value==1){
+                            var a = '<span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check" data_id="'+row.id+'" data_status="'+row.status+'" onclick="updeteStatus(this);"></i> </span>';
+                        }else {
+                            var a = '<span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close" data_id="'+row.id+'" data_status="'+row.status+'" onclick="updeteStatus(this);"></i> </span>';
+                        }
+                    <else />
+                    if(value==1){
+                        var a = '<span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check"  ></i> </span>';
+                    }else {
+                        var a = '<span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close" ></i> </span>';
+                    }
+                    </if>
+                    return a;
+                }
+            },{
+                field: 'operate',
+                title: '操作',
+                align: 'center',
+                formatter: function(value,row,index){
+                    var e='';
+                    var d = '';
+                    <if condition="check_auth(91) eq 1">
+                         e = '<a href="#" mce_href="#" data_from="editUserInfo" data_id="'+row.id+'"  onclick="edit(this)" >编辑</a> ';
+                    </if>
+                    <if condition="check_auth(91) eq 1">
+                         d = '<a href="#" mce_href="#" onclick="del(\''+ row.id +'\')">删除</a> ';
+                    </if>
+
+                    return e+d;
+                }
+            }
+        ]
+    });
+    }
+
+    $(document).ready(function () {
+        //调用函数，初始化表格
+        initTable();
+        //当点击查询按钮的时候执行
+        $("#search").bind("click", initTable);
+    });
+    //搜索
+    function p_search() {
+
+        $facilityTypeList.bootstrapTable('refresh');
+    }
+
+    /**
+     * 修改状态
+     * */
+    function updeteStatus(obj){
+        var id = $(obj).attr('data_id');
+        var status = $(obj).attr('data_status');
+
+        layer.confirm("确定修改？",function () {
+            $.ajax({
+                method: "post",
+                url: '{:U("Facility/editFacilityType",array("edittype"=>status,"display"=>ajax))}',
+                data:{ 'id':id, 'status' : status },
+                dataType: 'JSON',
+                success: function(data){
+                    if (data.code == 200) {
+                        $facilityTypeList.bootstrapTable('refresh');
+                        layer.msg(data.msg);
+                    } else {
+                        layer.msg(data.msg);
+                    }
+                },
+                 error:function(){
+                   layer.msg('数据错误！');
+                 }
+            });
+        });
+    }
+
+
+    /**
+     * 编辑详细信息
+     * */
+    function edit(obj){
+        var id = $(obj).attr('data_id');
+        var from = $(obj).attr('data_from');
+        $.ajax({
+            method: "post",
+            url: '{:U("Facility/editFacilityType",array("display"=>display))}',
+            data:{ 'id':id },
+            dataType: 'JSON',
+            success: function(data){
+                if (data.code == 200) {
+                    $('#edit_facname').val(data.row.facname);
+                    if(data.row.status==1){
+                        $('#edit_status1').attr('checked', 'checked');
+                    }else {
+                        $('#edit_status2').attr('checked', 'checked');
+                    }
+                    var select = $('#edit_type option');
+                    select.each(function(){
+                        var txt = $(this).val();
+                        if(txt==data.row.type){
+                            $(this).attr("selected", true);
+                        }
+                    });
+                } else {
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.msg('数据错误！');
+            }
+        });
+        layer.open({
+            type: 1,
+            title: '编辑',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['45%', '40%'],
+            content: $('#'+from),
+            btn: ['确定', '取消'], // 按钮
+            yes: function(index, layero){
+                var from_data = $('#'+from).toJson();
+                if(from_data.edit_facname == ''){
+                    layer.msg('请填写设备名称！');
+                    return false;
+                }
+                layer.msg('确定编辑？', {
+                    time: 0 //不自动关闭
+                    ,btn: ['确定', '取消']
+                    ,yes: function(index){
+                        $.ajax({
+                            method: "post",
+                            url: '{:U("Facility/editFacilityType",array("display"=>submit,"action"=>edit))}',
+                            data:{ 'id':id, 'from' : $('#'+from).toJson() },
+                            dataType: 'JSON',
+                            success: function(data){
+                                if (data.code == 200) {
+                                    $facilityTypeList.bootstrapTable('refresh');
+                                    layer.close(index);
+                                    layer.closeAll();
+                                    layer.msg(data.msg);
+                                } else {
+                                    layer.msg(data.msg);
+                                }
+                            },
+                            error:function(){
+                                layer.msg('数据错误！');
+                            }
+                        });
+                    }
+                });
+
+
+            }
+//            content: '{:U("User/editUser",array("id"=>'+id+',"act"=>display))}' //iframe的url
+        });
+    }
+
+    /**
+     * 添加设备类型
+     * */
+    function addFacilityType(obj){
+        $('#edit_facname').val('');
+        var from = $(obj).attr('data_from');
+        layer.open({
+            type: 1,
+            title: '添加',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['45%', '40%'],
+            content: $('#'+from),
+            btn: ['确定', '取消'], // 按钮
+            yes: function(index, layero){
+                var from_data = $('#'+from).toJson();
+                if(from_data.edit_facname == ''){
+                    layer.msg('请填写设备名称！');
+                    return false;
+                }
+                layer.msg('确定添加？', {
+                    time: 0 //不自动关闭
+                    ,btn: ['确定', '取消']
+                    ,yes: function(index){
+                        $.ajax({
+                            method: "post",
+                            url: '{:U("Facility/editFacilityType",array("display"=>submit,"action"=>add))}',
+                            data:{  'from' : $('#'+from).toJson() },
+                            dataType: 'JSON',
+                            success: function(data){
+                                if (data.code == 200) {
+                                    $facilityTypeList.bootstrapTable('refresh');
+                                    layer.close(index);
+                                    layer.closeAll();
+                                    layer.msg('添加成功!');
+                                } else {
+                                    layer.msg(data.msg);
+                                }
+                            },
+                            error:function(){
+                                layer.msg('数据错误！');
+                            }
+                        });
+                    }
+                });
+
+
+
+            }
+//            content: '{:U("User/editUser",array("id"=>'+id+',"act"=>display))}' //iframe的url
+        });
+    }
+
+    /**
+     * 删除用户
+     * */
+    function del(id){
+        layer.msg('确定删除？', {
+            time: 0 //不自动关闭
+            ,btn: ['确定', '取消']
+            ,yes: function(index){
+                $.ajax({
+                    method: "post",
+                    url: '{:U("Facility/editFacilityType",array("display"=>submit,"action"=>del))}',
+                    data:{'id':id},
+                    dataType: 'JSON',
+                    success: function(data){
+                        if (data.code == 200) {
+                            $facilityTypeList.bootstrapTable('refresh');
+                            layer.msg('删除成功!');
+                        } else {
+                            layer.msg('删除失败!');
+                        }
+                    },
+                    error:function(){
+                        layer.msg('数据错误！');
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * 获取市
+     * */
+    function get_city(obj){
+        var provinceid = $(obj).val();
+        var city = $(obj).attr('data_city');
+        $.ajax({
+            type: 'post',
+            data:{
+                provinceid:provinceid
+            },
+            url: '{:U("UserInfo/getCity")}',
+            success:function(data) {
+                $("#"+city).empty();
+                $("#"+city).append("<option value='-1'>全部</option>");
+                if(data.code==200){
+                    $.each(data.row, function() {
+                        $("#"+city).append("<option value='"+this.id+"'>"+this.areaname+"</option>");
+                    })
+                }else {
+                    layer.msg(data.msg);
+                }
+            },
+            dataType: "JSON",
+            error : function() {
+                layer.msg('数据错误！');
+            }
+        });
+    }
+
+    /**
+     * 获取区
+     * */
+    function getDistrict(obj){
+        var cityid = $(obj).val();
+        var district = $(obj).attr('data_district');
+        $.ajax({
+            type: 'post',
+            data:{
+                cityid : cityid
+            },
+            url: '{:U("UserInfo/getDistrict")}',
+            success:function(data) {
+                $("#"+district).empty();
+                $("#"+district).append("<option value='-1'>全部</option>");
+                if(data.code==200){
+                    $.each(data.row, function() {
+                        $("#"+district).append("<option value='"+this.id+"'>"+this.areaname+"</option>");
+                    })
+                }else {
+                    layer.msg(data.msg);
+                }
+            },
+            dataType: "JSON",
+            error : function() {
+                layer.msg('数据错误！');
+            }
+        });
+    }
+
+</script>

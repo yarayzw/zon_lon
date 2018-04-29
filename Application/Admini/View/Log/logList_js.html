@@ -1,0 +1,186 @@
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script src="__JS__/admin/demo/laydate/laydate.js"></script>
+<script src="__JS__/admin/bootstrapValidator.js"></script>
+<script src="__JS__/admin/bootstrapValidator.min.js"></script>
+<script src="__JS__/admin/index.js"></script>
+<script type="text/javascript">
+    var $logList = $('#logList');
+    $(document).ready(function() {
+    });
+    function initTable() {
+        //先销毁表格
+        $logList.bootstrapTable('destroy');
+        //初始化表格,动态从服务器加载数据
+        $logList.bootstrapTable({
+            url: '{:U("Log/logList",array("act"=>ajax))}', //获取数据的Servlet地址
+            striped: true,  //表格显示条纹
+            pagination: true, //启动分页
+            sortName: 'id',
+            sortOrder: 'desc',
+            pageSize: 15,  //每页显示的记录数
+            pageNumber:1, //当前第几页
+            pageList: [10, 15, 20, 25],  //记录数可选列表
+            search: false,
+            toolbar: '#list_search',
+            showColumns: true,  //显示下拉框勾选要显示的列
+            showRefresh: true,  //显示刷新按钮
+            sidePagination: "server", //表示服务端请求
+            //设置为undefined可以获取pageNumber，pageSize，searchText，sortName，sortOrder
+            //设置为limit可以获取limit, offset, search, sort, order
+            responseHandler:function(res){
+                //远程数据加载之前,处理程序响应数据格式,对象包含的参数: 我们可以对返回的数据格式进行处理
+                //在ajax后我们可以在这里进行一些事件的处理
+                return res.data;
+            },
+            queryParamsType : "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    //这里是在ajax发送请求的时候设置一些参数 params有什么东西，自己看看源码就知道了
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    sortName: params.sortName,
+                    sortOrder: params.sortOrder,
+                    tablename : $('#tablename').val(),
+                    act_account : $('#act_account').val(),
+                    Q_time: $('#Q_times').val(),
+                    E_time: $('#E_times').val(),
+                };
+                return param;
+            },
+            onLoadSuccess: function(data){  //加载成功时执行
+//            alert("加载成功"+data);
+                if(data.success==400){
+                    layer.msg(data.message, {time : 1500, icon : 2});
+                }
+            },
+            onLoadError: function(){  //加载失败时执行
+                layer.msg("加载数据失败", {time : 1500, icon : 2});
+            },
+            columns: [
+                {
+                    title: 'ID',
+                    field: 'id',
+                    align: 'center',
+                    valign: 'middle'
+                },
+                {
+                    field: 'tablename',
+                    title: '操作表名',
+                    sortable: true,
+                    align: 'center'
+                },
+                {
+                    field: 'act_id',
+                    title: '管理员ID',
+                    sortable: true,
+                    align: 'center',
+                    width: '2%'
+                },
+                {
+                    field: 'act_account',
+                    title: '管理员帐号',
+                    sortable: true,
+                    align: 'center',
+                    width: '2%'
+                },
+                {
+                    field: 'description',
+                    title: '操作记录说明',
+                    sortable: true,
+                    align: 'left',
+                    width: '30%'
+                },
+                {
+                    field: 'get_parameter',
+                    title: 'get参数',
+                    sortable: true,
+                    align: 'left',
+                    width: '45%'
+                },
+                {
+                    field: 'times',
+                    title: '时间',
+                    sortable: true,
+                    align: 'left',
+                    formatter: function(value,row,index){
+                        if (value) {
+                            var value_time = parseInt(value);
+                            var time = new Date(value_time * 1000);
+                            var ymdhis = "";
+                            ymdhis += time.getUTCFullYear() + "-";
+                            ymdhis += (time.getUTCMonth() + 1) + "-";
+                            ymdhis += time.getUTCDate();
+
+                            ymdhis += " " + time.getUTCHours() + ":";
+                            ymdhis += time.getUTCMinutes() + ":";
+                            ymdhis += time.getUTCSeconds();
+
+                            return ymdhis;
+                        }
+                    },
+                    width: '9%'
+                },
+                {
+                    field: 'operate',
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value,row,index){
+                        var e='';
+                        var d = '';
+                        <if condition="check_auth(92) eq 1">
+                        d = '<a href="#" mce_href="#" onclick="del(\''+ row.id +'\')">删除</a> ';
+                        </if>
+                        return e+d;
+                    },
+                    width: '3%'
+                }
+            ]
+        });
+    }
+
+    $(document).ready(function () {
+        //调用函数，初始化表格
+        initTable();
+        //当点击查询按钮的时候执行
+        $("#search").bind("click", initTable);
+    });
+    //搜索
+    function p_search() {
+
+        $logList.bootstrapTable('refresh');
+    }
+
+    /**
+     * 删除日志
+     * */
+    function del(id){
+        layer.msg('确定删除？', {
+            time: 0 //不自动关闭
+            ,btn: ['确定', '取消']
+            ,yes: function(index){
+                $.ajax({
+                    method: "post",
+                    url: '{:U("Log/delLog")}',
+                    data:{'id':id},
+                    dataType: 'JSON',
+                    success: function(data){
+                        if (data.code == 200) {
+                            $logList.bootstrapTable('refresh');
+                            layer.msg('删除成功!');
+                        } else {
+                            layer.msg('删除失败!');
+                        }
+                    },
+                    error:function(){
+                        layer.msg('数据错误！');
+                    }
+                });
+            }
+        });
+    }
+
+
+
+</script>

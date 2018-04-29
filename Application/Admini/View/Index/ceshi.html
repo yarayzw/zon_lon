@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    <include file="Public/common_header"/>
+    <link href="__CSS__/admin/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+    <link href="__CSS__/admin/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+    <script src="__JS__/admin/echarts.min.js"></script>
+    <script src="__JS__/admin/extendjs/china.js"></script>
+    <script src="__JS__/admin/jquery.min.js"></script>
+</head>
+<body>
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<!-- 左上 -->
+<div style="margin-top: 2%">
+    <div>
+        <form id = 'equipment'>
+            <div class="col-sm-7" style="margin-bottom: 2%;height: 50px;">
+                省: <select name="edit_province" id="edit_province" data_city="edit_city" style="height: 40px;"
+                           onchange="get_city(this);">
+                <option value="-1">全部</option>
+                <volist name="province" id="province_v">
+                    <option value="{$province_v.id}">{$province_v.areaname}</option>
+                </volist>
+            </select>&nbsp;&nbsp;
+                市: <select name="edit_city" id="edit_city" data_district="edit_district" style="height: 40px;"
+                           onchange="getDistrict(this)">
+                <option value="-1">全部</option>
+            </select>&nbsp;&nbsp;
+                区: <select name="edit_district" onchange="disabledChange(this)" id="edit_district" style="height: 40px;">
+                <option value="-1">全部</option>
+            </select>&nbsp;&nbsp;
+                设备状态:
+                <select name="" id="is_run_query" style="height: 40px;" onchange="is_query();">
+                    <option value="-1">全部</option>
+                    <option value="1">运行</option>
+                    <option value="2">故障</option>
+                </select>
+            </div>
+        </form>
+    </div>
+    <hr/>
+    <div id="privince_facility" style="float:left;width: 100%;height:700px;"></div>
+</div>
+
+
+<input type="hidden" id="year" value="2017" >
+<include file="Public/common_footer"/>
+
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script src="__JS__/admin/bootstrapValidator.js"></script>
+<script src="__JS__/admin/bootstrapValidator.min.js"></script>
+<script src="__JS__/admin/index.js"></script>
+<include file="Index/ceshi_js"/>
+</body>
+</html>

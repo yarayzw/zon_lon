@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <include file="Public/common_header" />
+</head>
+<body class="gray-bg">
+<div class="row">
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>添加角色</h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                    <a class="close-link">
+                        <i class="fa fa-times"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <form class="form-horizontal m-t" id="commentForm" method="post">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">角色名 :</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="title" value=""  required="" aria-required="true" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">是否可用 :</label>
+                    <div class="col-sm-8">
+                        <div class="radio radio-danger radio-inline">
+                            <input type="radio" id="status1" checked="checked"  value="1" name="status"  />
+                            <label for="status1"> 是 </label>
+                        </div>
+                        <div class="radio radio-danger radio-inline">
+                            <input type="radio" id="status2"    value="0" name="status"   />
+                            <label for="status2"> 否 </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">说明：</label>
+                    <div class="col-sm-8">
+                        <textarea id="desc" name="desc" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">包含规则 :</label>
+                    <div class="col-sm-8">
+                        <div class="tabs-container">
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a data-toggle="tab" href="#tab-1" aria-expanded="true"> 后台</a></li>
+                             <!--   <li class=""><a data-toggle="tab" href="#tab-2" aria-expanded="false">驾校</a></li>
+                                <li class=""><a data-toggle="tab" href="#tab-3" aria-expanded="false">学员</a></li>-->
+                            </ul>
+                            <div class="tab-content">
+                                <div id="tab-1" class="tab-pane active">
+                                    <div class="panel-body">
+                                        <dl class="dl-horizontal">
+                                            <volist name="rulelist" id="rulesadmin">
+                                                <eq name="rulesadmin['module']" value="Admini">
+                                                    <hr /><p/>
+                                                    <dt><label> {$rulesadmin['title']} <input type="checkbox" class="" name="radmin[]" value="{$rulesadmin['id']}" /></label></dt>
+                                                    <notempty name="rulesadmin['_child']">
+                                                        <volist name="rulesadmin['_child']" id="rachild">
+                                                            <dd><label><input type="checkbox" class="" name="radmin[]" value="{$rachild['id']}" /> {$rachild['title']} </label></dd>
+                                                        </volist>
+                                                        <else/>
+                                                        <dd></dd>
+                                                    </notempty>
+                                                </eq>
+                                            </volist>
+                                        </dl>
+                                    </div>
+                                </div>
+                             <!--   <div id="tab-2" class="tab-pane">
+                                    <div class="panel-body">
+                                        <dl class="dl-horizontal">
+                                            <volist name="rulelist" id="rulesdrivs">
+                                                <eq name="rulesdrivs['module']" value="Drivs">
+                                                    <dt><label> {$rulesdrivs['title']} <input type="checkbox" class="" name="radmin[]" value="{$rulesdrivs['id']}" /></label></dt>
+                                                    <volist name="rulesdrivs['_child']" id="rachild">
+                                                        <dd><label><input type="checkbox" class="" name="radmin[]" value="{$rachild['id']}" /> {$rachild['title']}</label></dd>
+                                                    </volist>
+                                                </eq>
+                                            </volist>
+                                        </dl>
+                                    </div>
+                                </div>-->
+                               <!-- <div id="tab-3" class="tab-pane">
+                                    <div class="panel-body">
+                                        <dl class="dl-horizontal">
+                                            <volist name="rulelist" id="rulesusers">
+                                                <eq name="rulesusers['module']" value="Users">
+                                                    <dt><label> {$rulesusers['title']} <input type="checkbox" class="" name="radmin[]" value="{$rulesusers['id']}" /></label></dt>
+                                                    <volist name="rulesusers['_child']" id="rachild">
+                                                        <dd><label><input type="checkbox" class="" name="radmin[]" value="{$rachild['id']}" /> {$rachild['title']}</label></dd>
+                                                    </volist>
+                                                </eq>
+                                            </volist>
+                                        </dl>
+                                    </div>
+                                </div>-->
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4 col-sm-offset-3">
+                        <button id="btnsubmit" class="btn btn-primary" class="col-sm-12" type="button">确认添加</button>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<include file="Public/common_footer" />
+<script type="text/javascript">
+    $(function () {
+        $form=$("#commentForm");
+        $("#btnsubmit").on("click",function () {
+            if(validate()){
+                var index_load=layer.load();
+                $.post("{:U('Auth/do_addrole')}",$form.serialize(),function (result) {
+                    layer.close(index_load);
+                    if(result.code==20000){
+                        layer.msg(result.message);
+                        $form[0].reset();
+                    }else{
+                        layer.msg(result.message);
+                    }
+                },"json")
+            }
+        })
+        function validate() {
+            $title=$form.find("input[name='title']");
+            if($title.val()==""){
+                layer.msg("角色名不能为空！");
+                return false;
+            }
+            return true;
+        }
+    })
+</script>
+</body>
+</html>

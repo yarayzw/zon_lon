@@ -1,0 +1,39 @@
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script src="__JS__/admin/bootstrapValidator.js"></script>
+<script src="__JS__/admin/bootstrapValidator.min.js"></script>
+<script src="__JS__/admin/bootstrap-treeview.js"></script>
+<script src="__JS__/admin/index.js"></script>
+<script>
+    $(function(){
+        getTree();
+    });
+    function getTree() {
+        // Some logic to retrieve, or generate tree structure
+        $.ajax({
+            method: "post",
+            url: '{:U("Auth/getAuthList")}',
+            data: {},
+            dataType: 'JSON',
+            success: function (data) {
+                $('#tree').treeview({
+                    data: data,
+                    emptyIcon:'green',
+                    showTags: true
+                });
+            },
+            error:function () {
+                layer.msg('数据错误！');
+            }
+            });
+    }
+    function getDisabled(){
+        var checkedArr = $('#tree').treeview('getSelected','');
+        alert(JSON.stringify(checkedArr));
+        for (var key in arr) {
+            alert(arr[key].id);
+        }
+    }
+
+</script>

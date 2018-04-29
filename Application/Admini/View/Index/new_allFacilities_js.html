@@ -1,0 +1,714 @@
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script src="__JS__/admin/bootstrapValidator.js"></script>
+<script src="__JS__/admin/demo/laydate/laydate.js"></script>
+<script src="__JS__/admin/bootstrapValidator.min.js"></script>
+<script src="__JS__/admin/index.js"></script>
+<script>
+//    var $faciListTable = $('#facilityListTable');
+
+    var rate_of_increase = echarts.init(document.getElementById('rate_of_increase'));
+    var province_facility_area = echarts.init(document.getElementById('province_facility_area'));
+    var operation_facility = echarts.init(document.getElementById('operation_facility'));
+    var peration_facility_div = $('#operation_facility');
+    var provinces = ['shanghai', 'hebei','shanxi','neimenggu','liaoning','jilin','heilongjiang','jiangsu','zhejiang','anhui','fujian','jiangxi','shandong','henan','hubei','hunan','guangdong','guangxi','hainan','sichuan','guizhou','yunnan','xizang','shanxi1','gansu','qinghai','ningxia','xinjiang', 'beijing', 'tianjin', 'chongqing', 'xianggang', 'aomen'];
+    var provincesText = ['上海', '河北', '山西', '内蒙古', '辽宁', '吉林','黑龙江',  '江苏', '浙江', '安徽', '福建', '江西', '山东','河南', '湖北', '湖南', '广东', '广西', '海南', '四川', '贵州', '云南', '西藏', '陕西', '甘肃', '青海', '宁夏', '新疆', '北京', '天津', '重庆', '香港', '澳门'];
+    var provincesJanText = ['上海','河北省','山西省','内蒙古自治区','辽宁省','吉林省','黑龙江省','江苏省','浙江省','安徽省','福建省','江西省','山东省','河南省','湖北省','湖南省','广东省','广西壮族自治区','海南省','四川省','贵州省','云南省','西藏自治区','陕西省','甘肃省','青海省','宁夏回族自治区','新疆维吾尔自治区','北京','天津','重庆','香港','澳门'];
+    var provincesId = [310000,130000,140000,150000,210000,220000,230000,320000,330000,340000,350000,360000,370000,410000,420000,430000,440000,450000,460000,510000,520000,530000,540000,610000,620000,630000,640000,650000,110000,120000,500000,810000,820000];
+
+
+//全国设备点击
+operation_facility.on('click',function(t){
+    var k = [];
+    var j = [];
+    var i = 0;
+    $.each(t, function() {
+        var item = this;
+        k[i] = item["name"];
+        j[i] = item['value'];
+        i++;
+    });
+
+    var key =$.inArray(k[8],provincesText);
+    var name_new = provincesJanText[key];
+    $('#edit_province').val(provincesId[key]);
+    get_city($('#edit_province'));
+//    alert(name_new);
+    var name = provinces[key];
+    if(j[8]>0){
+
+    }
+});
+
+/**
+* 设备增长率图标
+* */
+/**
+ * 用户增长率图表
+ * */
+rate_of_increase.setOption({
+    textStyle:{
+      color:'#fff',
+    },
+    barWidth: 10,
+    toolbox: {
+        show : true,
+        feature : {
+            myTool1: {
+                show: true,
+                title: '上一年',
+                icon: 'image://__IMG__/admin/left.png',
+                onclick: function (){
+                    var year = $('#year').val();
+                    $('#year').val(parseInt(year)-1);
+                    rate_of_increase_function(parseInt(year)-1);
+                }
+            },
+            myTool2: {
+                show: true,
+                title: '下一年',
+                icon: 'image://__IMG__/admin/right.png',
+                onclick: function (){
+                    var year = $('#year').val();
+                    $('#year').val(parseInt(year)+1);
+                    rate_of_increase_function(parseInt(year)+1);
+                }
+            }
+        }
+    },
+    tooltip : {
+        trigger: 'axis',
+        axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        }
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    xAxis : [
+        {
+            type : 'category',
+            data : ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+            axisTick: {
+                alignWithLabel: true
+            },
+            nameTextStyle:{
+                color: '#fff',
+                fontsize: 5,
+            },
+            nameLocation : 'middle',
+        }
+    ],
+    yAxis : [
+        {
+            type : 'value',
+            nameTextStyle:{
+                color: '#fff',
+            }
+        }
+    ],
+});
+function rate_of_increase_function(year_get){
+    var ceshi = [10, 52, 200, 334, 390, 330, 220];
+    if(year_get>0){
+        var year = year_get;
+    }else {
+        var year = $('#year').val();
+    }
+    $.ajax({
+        method: "post",
+        url: '{:U("UserInfo/rateOfIncrease")}',
+        data:{ 'year' : year },
+        dataType: 'JSON',
+        success: function(data){
+            if (data.code == 200) {
+                $('#add_facili').text(data.row_num);
+                rate_of_increase.setOption({
+                    title: {
+                        text:   '设备增长率 '+data.year + '年',
+                        textStyle :{
+                            color: '#fff',
+                            fontsize: 10,
+                        }
+                    },
+                    series : [
+                        {
+                            name:'增长率',
+                            type:'bar',
+                            itemStyle :{
+                              normal: {
+                                color: '#63B8Ff',
+                              },
+                            },
+                            data: data.row
+                        },
+                        {
+                            name:'增长台数',
+                            type:'bar',
+                            barWidth: '10%',
+                            data: data.row_new_num
+                        }
+                    ]
+                });
+            } else {
+                $('#add_facili').text(666);
+                rate_of_increase.setOption({
+                    title: {
+                        text: '设备增长率 '+year+'年',
+                        textStyle :{
+                            color: '#fff',
+                            fontsize: 10,
+                        }
+                    },
+                    series : [
+                        {
+                            name:'增长率',
+                            type:'bar',
+                            barWidth: '10%',
+                            data: [10, 52, 200, 334, 390, 330, 220]
+                        },
+                        {
+                            name:'增长台数',
+                            type:'bar',
+                            barWidth: '10%',
+                            data: [10, 52, 200, 334, 390, 330, 220]
+                        }
+                    ]
+                });
+            }
+        },
+        error:function(){
+            $('#add_facili').text(666);
+            var year = $('#year').val();
+            rate_of_increase.setOption({
+                title: {
+                    text: '设备增长率 '+year+'年',
+                    textStyle :{
+                        color: '#fff',
+                        fontsize: 10,
+                    }
+                },
+                series : [
+                    {
+                        name:'增长率',
+                        type:'bar',
+                        barWidth: '10%',
+                        data: [10, 52, 200, 334, 390, 330, 220]
+                    }
+                ]
+            });
+        }
+    });
+}
+
+
+/**
+ * 全国设备运行台数图表
+ * */
+operation_facility.setOption ({
+
+    toolbox: {
+        show: true,
+        orient: 'vertical',
+        left: 'right',
+        top: 'center',
+        feature: {
+
+        }
+    },
+    title: {
+        text: ['统计'],
+        left: 'left',
+    },
+    tooltip: {
+        trigger: 'item'
+    },
+    legend: {
+        orient: 'vertical',
+        left: 'right',
+        data:['facility']
+    },
+    visualMap: {
+        min: 0,
+        max: 2500,
+        left: 'left',
+        top: 'bottom',
+        text: ['高','低'],           // 文本，默认为数值文本
+        calculable: true,
+    },
+    series: [
+        {
+            name: 'facility',
+            type: 'map',
+            mapType: 'china',
+            roam: false,
+            label: {
+                normal: {
+                    show: true
+                },
+                emphasis: {
+                    show: true
+                }
+            },
+            zoom: 1.18,
+            data:[]
+        }
+    ]
+});
+function operation_facility_function(status,provinceid,cityid,disabledid){
+
+    var is_run_query = $('#is_run_query').val();
+    /**
+     * 作假数据
+     * */
+    var data_row = [
+        {name: '北京',value: 2 },
+        {name: '天津',value: 2 },
+        {name: '上海',value: 2 },
+        {name: '重庆',value: 2 },
+        {name: '河北',value: 2 },
+        {name: '河南',value: 2 }
+    ];
+    $.ajax({
+        method: "post",
+        url: '{:U("Index/allFacilitiesAjax")}',
+        data:{ 'is_run' : is_run_query ,'is_run_query':is_run_query,'status':status,'provinceid':provinceid,'cityid':cityid,'disabledid':disabledid,'all':'all','history_s':$('#history_s').val(),'history_e':$('#history_e').val()},
+        dataType: 'JSON',
+        success: function(data){
+            if (data.code == 200) {
+                $('#num_area').text(data.row.proportion);
+                $('#mean_t').text(data.row.indoor_t);
+                $('#energy').text(data.row.sum_energy);
+                $('#mean_energy').text(data.row.energy);
+                $('#num_fa').text(data.row.fidsum);
+                $('#new_carbon').text(data.row.carbon);
+                $('#mean_max').text(data.row.new_indoor_max);
+                $('#mean_min').text(data.row.new_indoor_min);
+                $('#run_num').text(data.run_num);
+                operation_facility.setOption({
+//                    title: {
+////                            text: '设备数 ('+data.nums+') 台 装机总面积 ('+data.area_nums+'平方米) 室内平均温度 ('+data.mean_t+'℃) 总耗电量 ('+data.energy+') 平均能耗('+data.mean_energy+') 平均运行时长（'+data.run_time+'）',
+//                        subtext: '设备数 ('+data.row.fidsum+') 台 装机总面积 ('+data.row.proportion+'平方米) 室内平均温度 ('+data.row.indoor_t+'℃) 总耗电量 ('+data.row.sum_energy+') 平均能耗('+data.row.energy+') 平均运行时长（'+data.row.runtime+'）天 累计减少('+data.row.carbon+')kg碳排放 相当于种('+parseFloat(data.row.carbon*0.125,2)+')颗树',
+//                        subtextStyle: {
+//                            fontSize : 16,
+//                            color : '#3693fd'
+//                        },
+//                    },
+                    series: [{
+                        // 根据名字对应到相应的系列
+                        name: 'facility',
+                        data: data.row.new_arr
+                    }]
+                });
+            } else {
+                $('#num_area').text(0);
+                $('#mean_t').text(0);
+                $('#energy').text(0);
+                $('#mean_energy').text(0);
+                $('#num_fa').text(0);
+                $('#new_carbon').text(0);
+                $('#mean_max').text(0);
+                $('#mean_min').text(0);
+                $('#run_num').text(0);
+                operation_facility.setOption({
+                    series: [{
+                        // 根据名字对应到相应的系列
+                        name: 'facility',
+                        data: data_row
+                    }]
+                });
+            }
+        },
+        error:function(){
+            alert('数据错误！');
+        }
+    });
+}
+// 使用刚指定的配置项和数据显示图表。
+$(function(){
+    operation_facility_function(1,-1);
+    rate_of_increase_function(-1);
+});
+
+function randomData() {
+    return Math.round(Math.random()*1000);
+}
+
+/**
+ * 获取市从这开始
+ * */
+function get_city(obj){
+    $('#div_1').css("display","flex");
+    $('.other_div').show();
+    $('#div_3').css("display","none");
+    var provinceid = $(obj).val();
+    var city = $(obj).find("option:selected").attr('data_city');
+
+    var province_name = $(obj).find("option:selected").attr('data_area');
+    $.ajax({
+        type: 'post',
+        data:{
+            provinceid:provinceid
+        },
+        url: '{:U("UserInfo/getCity")}',
+        success:function(data) {
+            $("#edit_district").empty();
+            $("#edit_district").append("<option value='-1'>全部</option>");
+            $("#edit_city").empty();
+            $("#edit_city").append("<option value='-1'>全部</option>");
+            if(data.code==200){
+                $.each(data.row, function() {
+                    $("#edit_city").append("<option value='"+this.id+"' data_area='"+this.shortname+"'>"+this.areaname+"</option>");
+                })
+//                    setProvince(provinceid);
+                if(provinceid==-1){
+                    $('#operation_facility').show();
+//                    $('#province_facility_area').css('height','400px');
+                    $('#province_facility_area').hide();
+                    operation_facility_function(2,provinceid);
+                }else {
+
+                    $('#operation_facility').hide();
+                    $('#province_facility_area').show();
+                    getProvinceFacility(provinceid,province_name);
+                }
+            }else {
+                alert(data.msg);
+            }
+        },
+        dataType: "JSON",
+        error : function() {
+            alert('数据错误！');
+        }
+    });
+}
+
+/**
+ * 获取省级设备信息
+ * */
+function getProvinceFacility(provinceid,province_name) {
+//        alert(233);
+    var is_run_query = $('#is_run_query').val();
+    $.ajax({
+        type: 'post',
+        data:{
+            'provinceid':provinceid,
+            'is_run':is_run_query,
+            'history_s':$('#history_s').val(),
+            'history_e':$('#history_e').val()
+        },
+        url: '{:U("Index/getProvinceFacility")}',
+        success:function(data) {
+            if(data.code!=400){
+                setProvince(province_name,data);
+            }else {
+                setProvince(province_name,data);
+            }
+        },
+        dataType: "JSON",
+        error : function() {
+            alert('数据错误！');
+        }
+    });
+}
+
+/**
+ * 市级下拉框改变
+ * */
+function gitDistrictFacility(provinceid,province_name,is_district) {
+    var is_run_query = $('#is_run_query').val();
+    $.ajax({
+        type: 'post',
+        data:{
+            'provinceid':provinceid,
+            'is_run':is_run_query,
+            'parenid':$('#edit_province').val(),
+            'is_district':is_district,
+            'history_s':$('#history_s').val(),
+            'history_e':$('#history_e').val()
+        },
+        url: '{:U("Index/getDistrictFacility")}',
+        success:function(data) {
+            setProvince(province_name,data);
+        },
+        dataType: "JSON",
+        error : function() {
+            alert('数据错误！');
+        }
+    });
+}
+
+//用于使chart自适应高度和宽度,通过窗体高宽计算容器高宽
+var resizeWorldMapContainer = function () {
+    peration_facility_div.style.width = window.innerWidth+'px';
+    peration_facility_div.style.height = window.innerHeight+'px';
+};
+
+/**
+ * 显示省级地图
+ * */
+function setProvince(province_name,data_area_get) {
+    var key =$.inArray(province_name,provincesText);
+    var name = provinces[key];
+    $.get( '__PUBLIC__/js/admin/echarsallarea/province/'+name+'.json', function (geoJson) {
+        // myChart.hideLoading();
+        echarts.registerMap(name, geoJson);
+        if(data_area_get.code==200){
+            //省级
+            $('#num_area').text(data_area_get.row.proportion);
+            $('#mean_t').text(data_area_get.row.indoor_t);
+            $('#energy').text(data_area_get.row.sum_energy);
+            $('#mean_energy').text(data_area_get.row.energy);
+            $('#num_fa').text(data_area_get.row.fidsum);
+            $('#new_carbon').text(data_area_get.row.carbon);
+            $('#mean_max').text(data_area_get.row.new_indoor_max);
+            $('#mean_min').text(data_area_get.row.new_indoor_min);
+            $('#run_num').text(data_area_get.run_num);
+            //市级以下数据
+            $('#num_area_new').text(data_area_get.row.proportion);
+            $('#mean_t_new').text(data_area_get.row.indoor_t);
+            $('#energy_new').text(data_area_get.row.sum_energy);
+            $('#mean_energy_new').text(data_area_get.row.energy);
+            $('#num_fa_new').text(data_area_get.row.fidsum);
+            $('#new_carbon_new').text(data_area_get.row.carbon);
+            $('#mean_max_new').text(data_area_get.row.new_indoor_max);
+            $('#mean_min_new').text(data_area_get.row.new_indoor_min);
+            $('#run_num_new').text(data_area_get.run_num);
+            province_facility_area.setOption({
+//                left: 1,
+//                layoutCenter :['30%','30%'],
+//                layouSize:20,
+                toolbox: {
+                    show: true,
+                    orient: 'vertical',
+                    left: 'left',
+                    top: 'center',
+                    feature: {
+                    }
+                },
+//                title: {
+//                    text: ['统计'],
+//                    left: 'left',
+//                    subtext: '设备数 ('+data_area_get.row.fidsum+') 台 装机总面积 ('+data_area_get.row.proportion+'平方米) 室内平均温度 ('+data_area_get.row.indoor_t+'℃) 总耗电量 ('+data_area_get.row.sum_energy+') 平均能耗('+data_area_get.row.energy+') 平均运行时长（'+data_area_get.row.runtime+'）累计减少('+data_area_get.row.carbon+')kg碳排放 相当于种('+parseFloat(data_area_get.row.carbon*0.125,2)+')颗树',
+//                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    data:['facility']
+                },
+                visualMap: {
+                    min: 0,
+                    max: 2500,
+                    left: 'left',
+                    top: 'bottom',
+                    text: ['高','低'],           // 文本，默认为数值文本
+                    calculable: true
+                },
+                series: [
+                    {
+                        type: 'map',
+                        mapType: name,
+                        label: {
+                            normal: {
+                                show: true
+                            },
+                            emphasis: {
+                                show: true
+                            }
+                        },
+                        roam: 'move',
+                        animation: false,
+                        data : data_area_get.row.new_arr
+                        // animationDurationUpdate: 1000,
+                        // animationEasingUpdate: 'quinticInOut'
+                    }
+                ]
+            });
+        }else {
+            $('#num_area').text(0);
+            $('#mean_t').text(0);
+            $('#energy').text(0);
+            $('#mean_energy').text(0);
+            $('#num_fa').text(0);
+            $('#new_carbon').text(0);
+            $('#mean_max').text(0);
+            $('#mean_min').text(0);
+            $('#run_num').text(0);
+            //市级
+            $('#num_area_new').text(0);
+            $('#mean_t_new').text(0);
+            $('#energy_new').text(0);
+            $('#mean_energy_new').text(0);
+            $('#num_fa_new').text(0);
+            $('#new_carbon_new').text(0);
+            $('#mean_max_new').text(0);
+            $('#mean_min_new').text(0);
+            $('#run_num_new').text(0);
+            province_facility_area.setOption({
+                toolbox: {
+                    show: true,
+                    orient: 'vertical',
+                    left: 'left',
+                    top: 'center',
+                    feature: {
+
+                    }
+                },
+                title: {
+                    text: ['统计'],
+                    left: 'left',
+                    subtext: [],
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    data:['facility']
+                },
+                visualMap: {
+                    min: 0,
+                    max: 2500,
+                    left: 'left',
+                    top: 'bottom',
+                    text: ['高','低'],           // 文本，默认为数值文本
+                    calculable: true
+                },
+                series: [
+                    {
+                        type: 'map',
+                        mapType: name,
+                        label: {
+                            normal: {
+                                show: true
+                            },
+                            emphasis: {
+                                show: true
+                            }
+                        },
+                        roam: 'move',
+                        animation: false,
+                        data : []
+                        // animationDurationUpdate: 1000,
+                        // animationEasingUpdate: 'quinticInOut'
+                    }
+                ]
+            });
+        }
+
+    });
+}
+
+
+
+
+/**
+ * 获取区
+ * */
+function getDistrict(obj){
+
+    var provinceid = $('#edit_province').val();
+    var cityid = $(obj).val();
+    if(cityid!=-1){
+        $('#div_1').css("display","none");
+        $('.other_div').css("display","none");
+        $('#div_3').css("display","flex");
+    }else {
+        $('#div_1').css("display","flex");
+        $('.other_div').show();
+        $('#div_3').css("display","none");
+    }
+    var district = $(obj).attr('data_district');
+    var city = $('#edit_city').find("option:selected").attr('data_city');
+    var province_name = $('#edit_province').find("option:selected").attr('data_area');
+//        alert(province_name);return;
+
+    $.ajax({
+        type: 'post',
+        data:{
+            'cityid' : cityid,
+        },
+        url: '{:U("UserInfo/getDistrict")}',
+        success:function(data) {
+            $("#"+district).empty();
+            $("#"+district).append("<option value='-1'>全部</option>");
+            if(data.code==200){
+                $.each(data.row, function() {
+                    $("#"+district).append("<option value='"+this.id+"' data_area='"+this.shortname+"'>"+this.areaname+"</option>");
+                })
+                gitDistrictFacility(cityid,province_name,0);
+//                    operation_facility_function(3,provinceid,cityid);
+
+            }else {
+                alert(data.msg);
+            }
+        },
+        dataType: "JSON",
+        error : function() {
+            alert('数据错误！');
+        }
+    });
+}
+
+/**
+ * 区域改变事件
+ * */
+function disabledChange(obj){
+    var provinceid = $('#edit_province').val();
+    var cityid = $('#edit_city').val();
+    var disabledid = $(obj).val();
+    var city = $('#edit_city').find("option:selected").attr('data_city');
+    var province_name = $('#edit_province').find("option:selected").attr('data_area');
+    if(disabledid==-1){
+        gitDistrictFacility(cityid,province_name,0);
+    }else {
+        gitDistrictFacility(disabledid,province_name,1);
+    }
+//        operation_facility_function(4,provinceid,cityid,disabledid);
+}
+
+/**
+ * 状态改变事件
+ * */
+function is_query(){
+    var provinceid = $('#edit_province').val();
+    var cityid = $('#edit_city').val();
+    var disabledid = $('#edit_district').val();
+    var city = $('#edit_province').find("option:selected").attr('data_city');
+    var province_name = $('#edit_province').find("option:selected").attr('data_area');
+    if(provinceid == -1){
+        operation_facility_function(1,-1);
+    }else {
+//            alert(cityid);
+        if(cityid == -1){
+            getProvinceFacility(provinceid,province_name);
+        }else {
+//                alert(disabledid);
+            if(disabledid == -1){
+                getProvinceFacility(cityid,province_name,0);
+            }else {
+                gitDistrictFacility(disabledid,province_name,1)
+            }
+        }
+    }
+
+}
+
+/**
+ * 查询当前设备的历史状态
+ * */
+function history_run_time() {
+
+}
+
+
+
+</script>

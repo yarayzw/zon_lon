@@ -9,4 +9,15 @@ return array(
     'DB_PWD'    => '',  // 密码  YhDB-mysql-5.7!
     'DB_PORT'   => '3306', // 端口
     'DB_PREFIX' => 'ymkj_', // 数据库表前缀
+
+
+    /* 模板相关配置 */
+    'TMPL_PARSE_STRING' => array(
+        '__PUBLIC__'=>__ROOT__.'/Public',
+        '__STATIC__' => __ROOT__ . '/Public/static',
+        '__IMG__'    => __ROOT__ . '/Public/img',
+        '__CSS__'    => __ROOT__ . '/Public/css',
+        '__JS__'     => __ROOT__ . '/Public/js',
+        '__H3__'     => __ROOT__ . '/Public/h3',
+    )
 );

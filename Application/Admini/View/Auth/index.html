@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <include file="Public/common_header" />
+    <link href="__CSS__/admin/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+    <link href="__CSS__/admin/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+</head>
+<body>
+<style>
+    .bgcolor{background:#F2F2F2;}
+</style>
+<!-- Panel Other -->
+<div class="ibox float-e-margins">
+    <div class="ibox-title">
+        <h5>规则列表</h5>
+        <div class="ibox-tools">
+            <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+            </a>
+            <a class="close-link">
+                <i class="fa fa-times"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <div class="row row-lg">
+            <div class="col-sm-12">
+                <!-- Example Toolbar -->
+                <div class="example-wrap">
+                    <div class="example">
+                        <div class="btn-group hidden-xs" id="exampleToolbar" role="group">
+
+                        </div>
+                        <table id="exampleTableToolbar" data-mobile-responsive="false">
+                            <thead>
+                            <tr>
+                                <th data-field="id">标识ID</th>
+                                <th data-field="module">所属模型</th>
+                                <!--  <th data-field="name">模型动作</th>-->
+                                <th data-field="title">名称</th>
+                                <th data-field="type">类型</th>
+                                <th data-field="sort">排序</th>
+                                <th data-field="icon">图标</th>
+                                <th data-field="status">状态</th>
+                                <th data-field="actions">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <volist name="authlist" id="aulist">
+                                <tr title="{$aulist.id}" class="bgcolor">
+                                    <td>{$aulist.id}</td>
+                                    <td>{$aulist.module}</td>
+                                    <!-- <td>{$aulist.name}</td>-->
+                                    <td>{$aulist.title}</td>
+                                    <td>
+                                        <switch name="aulist['navtype']">
+                                            <case value="1">URL</case>
+                                            <case value="2">主菜单</case>
+                                            <default />根节点
+                                        </switch>
+                                    </td>
+                                    <td>{$aulist.sort}</td>
+                                    <td>
+                                        <empty name="aulist.icon">
+                                            无
+                                            <else />
+                                            <i class="{$aulist.icon}" />
+                                        </empty>
+                                    </td>
+                                    <td id="btnstatus">
+                                        <if condition="$aulist.status eq 1">
+                                            <span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check"></i> </span>
+                                            <else />
+                                            <span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close"></i> </span>
+                                        </if>
+                                    </td>
+                                    <td>
+                                        <eq name="aulist.status" value="1">
+                                            <a action="rulestatus" data-id="{$aulist.id}" data-tag="n" class="label label-danger label-xs" href="javascript:;"><i class="fa fa-times"></i>禁用</a>
+                                            <else />
+                                            <a action="rulestatus" data-id="{$aulist.id}" data-tag="y" class="label label-info label-xs" href="javascript:;"><i class="fa fa-times"></i>启用</a>
+                                        </eq>
+                                    </td>
+                                </tr>
+                                <notempty name="aulist['_child']">
+                                    <volist name="aulist['_child']" id="auchild">
+                                        <tr title="{$auchild['id']}">
+                                            <td>{$auchild.id}</td>
+                                            <td> {$zifu=str_repeat('&nbsp;',2)}|-{$auchild.module}</td>
+                                            <!--<td>{$auchild.name}</td>-->
+                                            <td>{$auchild.title}</td>
+                                            <td>
+                                                <switch name="auchild['type']">
+                                                    <case value="1">URL</case>
+                                                    <case value="2">主菜单</case>
+                                                </switch>
+                                            </td>
+                                            <td>{$auchild.sort}</td>
+                                            <td>
+                                                <empty name="auchild.icon">
+                                                    无
+                                                    <else />
+                                                    <i class="{$auchild.icon}" />
+                                                </empty>
+                                            </td>
+                                            <td>
+                                                <if condition="$auchild.status eq 1">
+                                                    <span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check"></i> </span>
+                                                    <else />
+                                                    <span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close"></i> </span>
+                                                </if>
+                                            </td>
+                                            <td>
+                                                <eq name="auchild.status" value="1">
+                                                    <a action="rulestatus" data-id="{$auchild.id}" data-tag="n" class="label label-danger label-xs" href="javascript:;"><i class="fa fa-times"></i>禁用</a>
+                                                    <else />
+                                                    <a action="rulestatus" data-id="{$auchild.id}" data-tag="y" class="label label-info label-xs" href="javascript:;"><i class="fa fa-times"></i>启用</a>
+                                                </eq>
+                                            </td>
+                                        </tr>
+
+                                        <notempty name="auchild['_child']">
+                                            <volist name="auchild['_child']" id="achild">
+                                                <tr title="{$achild['id']}">
+                                                    <td>{$aachild.id}</td>
+                                                    <td> {$zifu=str_repeat('&nbsp;',4)}|-{$achild.module}</td>
+                                                    <!--<td>{$achild.name}</td>-->
+                                                    <td>{$achild.title}</td>
+                                                    <td>
+                                                        <switch name="achild['type']">
+                                                            <case value="1">URL</case>
+                                                            <case value="2">主菜单</case>
+                                                        </switch>
+                                                    </td>
+                                                    <td>{$achild.sort}</td>
+                                                    <td>
+                                                        <empty name="achild.icon">
+                                                            无
+                                                            <else />
+                                                            <i class="{$achild.icon}" />
+                                                        </empty>
+                                                    </td>
+                                                    <td>
+                                                        <if condition="$achild.status eq 1">
+                                                            <span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check"></i> </span>
+                                                            <else />
+                                                            <span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-check"></i> </span>
+                                                        </if>
+                                                    </td>
+                                                    <td>
+                                                        <eq name="achild.status" value="1">
+                                                            <a action="rulestatus" data-id="{$achild.id}" data-tag="n" class="label label-danger label-xs" href="javascript:;"><i class="fa fa-times"></i>禁用</a>
+                                                            <else />
+                                                            <a action="rulestatus" data-id="{$achild.id}" data-tag="y" class="label label-info label-xs" href="javascript:;"><i class="fa fa-times"></i>启用</a>
+                                                        </eq>
+                                                    </td>
+                                                </tr>
+                                            </volist>
+                                        </notempty>
+                                    </volist>
+                                </notempty>
+                            </volist>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- End Example Toolbar -->
+            </div>
+        </div>
+    </div>
+</div>
+<include file="Public/common_footer" />
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $(document).on("click","a[action='rulestatus']",function () {
+            $this=$(this);
+            layer.confirm("修改此条规则的状态？",function (c_index) {
+                layer.close(c_index);
+                var index_load=layer.load();
+                var id=$this.data("id");
+                var status=$this.data("tag");
+                $.post("{:U('Auth/do_rulestatus')}",{aid:id,status:status},function (result) {
+                    layer.close(index_load);
+                    if(result.code==20000){
+                        layer.msg(result.message);
+                        if(status=="y"){
+                            $this.parent("td").prev("td").html("<span class=\"btn btn-info btn-circle btn-sm\"> <i class=\"fa fa-check\"></i> </span>");
+                            $this.replaceWith("<a action=\"rulestatus\" data-id=\""+id+"\" data-tag=\"n\" class=\"label label-danger label-xs\" href=\"javascript:;\"><i class=\"fa fa-times\"></i>禁用</a>");
+                        }else{
+                            $this.parent("td").prev("td").html("<span class=\"btn btn-warning btn-circle btn-xs\"> <i class=\"fa fa-close\"></i> </span>");
+                            $this.replaceWith("<a action=\"rulestatus\" data-id=\""+id+"\" data-tag=\"y\" class=\"label label-info label-xs\" href=\"javascript:;\"><i class=\"fa fa-times\"></i>启用</a>");
+                        }
+                    }else{
+                        layer.msg(result.message);
+                    }
+                },"json");
+            })
+        })
+    })
+</script>
+</body>
+</html>

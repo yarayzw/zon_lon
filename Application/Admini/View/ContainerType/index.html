@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <include file="Public/common_header"/>
+    <link href="__CSS__/admin/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+    <link href="__CSS__/admin/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+
+</head>
+<body>
+<style>
+    .bgcolor {
+        background: #F2F2F2;
+    }
+</style>
+<!-- Panel Other -->
+<div class="ibox float-e-margins">
+    <div class="ibox-title">
+        <h5>容器列表</h5>
+
+        <div class="ibox-tools">
+            <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+            </a>
+            <a class="close-link">
+                <i class="fa fa-times"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <div class="row row-lg">
+            <div class="col-sm-12">
+                <!-- Example Toolbar -->
+                <div class="example-wrap">
+                    <div class="example">
+                        <div class="btn-group hidden-xs" id="facilityTypeListToolbar" role="group">
+
+                        </div>
+                        <table class="table table-hover" id="faciListTable"
+                               data-pagination="true"
+                               data-show-refresh="true"
+                               data-show-toggle="true"
+                               data-showColumns="true"></table>
+                    </div>
+                </div>
+                <!-- End Example Toolbar -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <form id="list_search_faci">
+        <if condition="check_auth(93) eq 1">
+            <a class="glyphicon glyphicon-plus" style="margin-left:10px;float:right;curosr: pointer;font-size: 20px" data_from="editFacility"
+               onclick="addFacility(this);">添加</a>
+        </if>
+        <div style="float: left;width: 180px;margin-right: 10px" class="input-group m-b" ><span class="input-group-addon">名称</span>
+            <input type="text" name="name_p" id="name_p" placeholder="" class="form-control">
+        </div>
+        <button style="float: right" type="button" onclick="p_search();" class="btn">查询</button>
+        </fieldset>
+    </form>
+</div>
+<form id="editFacility" class="form-horizontal m-t" style="display: none">
+
+    <div class="form-group" style="width: 100%;">
+        <input type="hidden" name="f_id">
+        <div style="float: left;margin-left: 7%;" class="input-group m-b" ><span class="input-group-addon">名称</span>
+            <input type="text" class="form-control" id="name" name="name" value="" required=""
+                   aria-required="true"/>
+        </div>
+        <div style="float: left;margin-left: 7%;" class="input-group m-b" ><span class="input-group-addon">长度</span>
+            <input type="number" class="form-control" id="longs" name="longs" value="" required=""
+                   aria-required="true" />
+        </div>
+        <div style="float: left;margin-left: 7%;" class="input-group m-b" ><span class="input-group-addon">宽度</span>
+            <input type="number" class="form-control" id="wide" name="wide" value="" required=""
+                   aria-required="true"/>
+        </div>
+        <div style="float: left;margin-left: 7%;" class="input-group m-b" ><span class="input-group-addon">高度</span>
+            <input type="number" class="form-control" id="higt" name="higt" value="" required=""
+                   aria-required="true"/>
+        </div>
+        <div style="float: left;margin-left: 7%;" class="input-group m-b" ><span class="input-group-addon">容量</span>
+            <input type="number" class="form-control" id="capacity" name="capacity" value="" required=""
+                   aria-required="true"/>
+        </div>
+
+        <label class="col-sm-2 control-label" style="float: left;margin-left: 7%;">是否启用：</label>
+        <div class="radio radio-info radio-inline" style="float: left">
+            <input type="radio" id="is_del1" value="1" checked="checked" name="is_del">
+            <label for="is_del1"> 启用 </label>
+        </div>
+        <div class="radio radio-inline" style="float: left">
+            <input type="radio" id="is_del2" value="2" name="is_del">
+            <label for="is_del2"> 禁用 </label>
+        </div>
+</form>
+
+
+<include file="Public/common_footer"/>
+<include file="ContainerType/index_js"/>
+
+</body>
+
+</html>

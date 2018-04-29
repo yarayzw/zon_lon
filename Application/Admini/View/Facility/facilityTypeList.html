@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <include file="Public/common_header"/>
+    <link href="__CSS__/admin/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+    <link href="__CSS__/admin/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+</head>
+<body>
+<style>
+    .bgcolor {
+        background: #F2F2F2;
+    }
+</style>
+<!-- Panel Other -->
+<div class="ibox float-e-margins">
+    <div class="ibox-title">
+        <h5>设备类型列表</h5>
+
+        <div class="ibox-tools">
+            <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+            </a>
+            <a class="close-link">
+                <i class="fa fa-times"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <div class="row row-lg">
+            <div class="col-sm-12">
+                <!-- Example Toolbar -->
+                <div class="example-wrap">
+                    <div class="example">
+                        <div class="btn-group hidden-xs" id="facilityTypeListToolbar" role="group">
+
+                        </div>
+                        <table class="table table-hover" id="facilityTypeList"
+                               data-pagination="true"
+                               data-show-refresh="true"
+                               data-show-toggle="true"
+                               data-showColumns="true">
+                        </table>
+                    </div>
+                </div>
+                <!-- End Example Toolbar -->
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <form id="list_search">
+        <if condition="check_auth(91) eq 1">
+        <a class="glyphicon glyphicon-plus" style="curosr: pointer;font-size: 20px" data_from="editUserInfo"
+           onclick="addFacilityType(this);">添加</a>
+        </if>
+        <fieldset>
+            名称: <input type="text" id="facname" style="width: 80px;">&nbsp;&nbsp;
+            状态: <select name="status" id="status" style="height: 40px;">
+            <option value="-1">全部</option>
+            <option value="1">正常</option>
+            <option value="0">删除</option>
+        </select>&nbsp;&nbsp;
+            <button type="button" onclick="p_search();" class="btn">查询</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        </fieldset>
+    </form>
+</div>
+
+
+<form id="editUserInfo" class="form-horizontal m-t" style="display: none;">
+
+    <div class="form-group" style="width: 100%;">
+        <label class="col-sm-3 control-label">设备名称 :</label>
+        <div class="col-sm-7" style="margin-bottom: 2%;height: 50px;">
+            <input type="text" class="form-control" id="edit_facname" name="edit_facname" value="" required=""
+                   aria-required="true"/>
+        </div>
+    </div>
+    <div class="form-group" style="width: 100%;">
+        <label class="col-sm-3 control-label">类型 :</label>
+        <div class="col-sm-7" style="margin-bottom: 2%;height: 50px;">
+            <select name="edit_type" id="edit_type" style="height: 40px;">
+                <option value="0">未知</option>
+                <option value="1">双系统</option>
+                <option value="2">单系统</option>
+                <option value="3">家用机</option>
+                <option value="4">水冷柜机</option>
+                <option value="5">四系统</option>
+            </select>
+        </div>
+    </div>
+    <label class="col-sm-2 control-label" style="float: left;margin-left: 5%;">开关：</label>
+
+    <div class="radio radio-info radio-inline" style="float: left">
+        <input type="radio" id="edit_status1" value="1" checked="checked" name="edit_status">
+        <label for="edit_status1"> 开 </label>
+    </div>
+    <div class="radio radio-inline" style="float: left">
+        <input type="radio" id="edit_status2" value="0" name="edit_status">
+        <label for="edit_status2"> 关 </label>
+    </div>
+
+</form>
+<include file="Public/common_footer"/>
+<include file="Facility/facilityTypeList_js"/>
+</body>
+
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <include file="Public/common_header" />
+</head>
+<body>
+<body class="gray-bg">
+<!-- Panel Other -->
+<div class="ibox float-e-margins">
+    <div class="ibox-title">
+        <h5>管理角色列表</h5>
+        <div class="ibox-tools">
+            <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+            </a>
+            <a class="close-link">
+                <i class="fa fa-times"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <div class="row row-lg">
+            <div class="col-sm-12">
+                <!-- Example Toolbar -->
+                <div class="example-wrap">
+                    <div class="example">
+                        <div class="btn-group hidden-xs" id="exampleToolbar" role="group">
+
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-condensed table-hover table-striped">
+                                <thead>
+                                <tr>
+                                    <th data-field="title">标题</th>
+                                    <th data-field="desc">描述</th>
+                                    <th data-field="status">可用状态</th>
+                                    <th data-field="action">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <notempty name="authgroups">
+                                    <volist name="authgroups" id="gplist">
+                                        <tr title="{$gplist.id}">
+                                            <td>{$gplist.title}</td>
+                                            <td>{$gplist.description}</td>
+                                            <td>
+                                                <if condition="$gplist.status eq 1">
+                                                    <span class="btn btn-info btn-circle btn-sm"> <i class="fa fa-check"></i> </span>
+                                                    <else />
+                                                    <span class="btn btn-warning btn-circle btn-xs"> <i class="fa fa-close"></i> </span>
+                                                </if>
+                                            </td>
+                                            <td>
+                                                <neq name="gplist.id" value="1">
+                                                    <a class="label label-primary label-xs" href="{:U('Auth/editrole',array('id'=>$gplist['id']))}"><i class="fa fa-edit"></i>编辑</a>
+                                                    <a action="delete" data-id="{$gplist.id}" class="label label-danger label-xs" href="javascript:;"><i class="fa fa-times"></i>删除</a>
+                                                </neq>
+                                            </td>
+                                        </tr>
+                                    </volist>
+                                </notempty>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<include file="Public/common_footer" />
+<script type="text/javascript">
+    $(function () {
+        $("a[action='delete']").on("click",function () {
+            $this=$(this);
+            layer.confirm("删除角色后，拥有该角色用户的权限将被删除，确认删除？",function (c_index) {
+                layer.close(c_index);
+                var index_load=layer.load();
+                var rid=$this.data("id");
+                $.post("{:U('Auth/do_delrole')}",{rid:rid},function (result) {
+                    layer.close(index_load);
+                    if(result.code==20000){
+                        layer.msg(result.message);
+                        location.reload();
+                    }else{
+                        layer.msg(result.message);
+                    }
+                },"json");
+            })
+        })
+    })
+</script>
+</body>
+</html>

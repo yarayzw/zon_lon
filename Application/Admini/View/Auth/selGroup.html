@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<include file="Public/common_header" />
+<link href="__STATIC__/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+</head>
+<body class="gray-bg">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>管理组信息</h5>
+                    <div class="ibox-tools">
+                        <a class="collapse-link">
+                            <i class="fa fa-chevron-up"></i>
+                        </a>
+                        <a class="close-link">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="ibox-content">
+                    <form class="form-horizontal m-t" id="commentForm" method="post" action='{:U('Auth/selGroup',array('id'=>$gplist['id'],'act'=>$_GET['act'],'action'=>submit))}' >
+                        <input type="hidden" name="id" value="{$auth_info.id}">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">组名 :</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" name="title" value="{$auth_info.title}"  required="" aria-required="true" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">是否可用 :</label>
+                            <div class="col-sm-8">
+                                <div class="radio radio-danger radio-inline">
+                                    <input type="radio" id="status1"  value="1" name="status" <present name="auth_info['status']"><eq name="auth_info['status']" value="1">checked<else/>checked</eq>
+                                    <else />checked</present> />
+                                    <label for="status1"> 是 </label>
+                                </div>
+                                <div class="radio radio-danger radio-inline">
+                                    <input type="radio" id="status2"    value="0" name="status"  <present name="auth_info['status']"><eq name="auth_info['status']" value="0">checked</eq>
+                                    <else />checked</present>  />
+                                    <label for="status2"> 否 </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">说明：</label>
+                            <div class="col-sm-8">
+                                <textarea id="desc" name="desc" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">包含规则 :</label>
+                            <div class="col-sm-8">
+                                <div class="tabs-container">
+                                    <ul class="nav nav-tabs">
+                                        <li class="active"><a data-toggle="tab" href="#tab-1" aria-expanded="true"> 后台</a></li>
+                                    </ul>
+                                    <div class="tab-content">
+                                        <div id="tab-1" class="tab-pane active">
+                                            <div class="panel-body">
+                                                <dl class="dl-horizontal">
+                                                <volist name="rulelist" id="rulesadmin">
+
+                                                <eq name="rulesadmin['module']" value="Admini">
+                                                <hr /><p/>
+                                                <dt><label> {$rulesadmin['title']} <input type="checkbox" class="" name="radmin[]" value="{$rulesadmin['id']}" <if condition="in_array($rulesadmin['id'],$auth_info['rules'])">checked="checked"</if> /></label></dt>
+
+                                                <volist name="rulesadmin['_child']" id="rachild">
+                                                <dd><label><input type="checkbox" class="" name="radmin[]" value="{$rachild['id']}"  <if condition="in_array($rachild['id'],$auth_info['rules'])">checked="checked"</if> /> {$rachild['title']} </label></dd>
+                                                </volist>
+                                                </eq>
+                                                </volist>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-3">
+                                <button class="btn btn-primary" class="col-sm-12" type="submit">确认<switch name="auth_act">
+            <case value="edit">编辑</case>
+            <default />添加
+        </switch></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+	<include file="Public/common_footer" />
+
+</body>
+</html>
