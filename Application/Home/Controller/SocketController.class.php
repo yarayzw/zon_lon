@@ -26,9 +26,12 @@ class SocketController extends PublicController
     public function connectSock()
     {
         set_time_limit(0);
-        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) or die("Could not create socket.\n");
+        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if ($socket == false) {
+            ErrorListModel::insertInformation('server create fail:' . socket_strerror(socket_last_error()));
+        }
         if (socket_bind($socket, $this->ip, $this->port) == false) {
-           ErrorListModel::insertInformation('server bind fail:' . '（'.json_encode($socket).'）' . socket_strerror(socket_last_error()));
+           ErrorListModel::insertInformation('server bind fail:' . socket_strerror(socket_last_error()));
         }
         // 监听套接流
         if (socket_listen($socket, 4) == false) {
