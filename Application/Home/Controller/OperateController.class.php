@@ -11,6 +11,7 @@ namespace Home\Controller;
 
 use Home\Model\EquipmentListModel;
 use Home\Model\ErrorListModel;
+use Home\Model\CommanListModel;
 
 class OperateController extends PublicController
 {
@@ -25,8 +26,10 @@ class OperateController extends PublicController
         // 地址的四位的16进制数据
         $address_six_teen = substr($string, 6, 4);
         $address = base_convert($address_six_teen, 16, 10);
+
         // 判断数据库中是否该设备 没有则报错
         $data = EquipmentListModel::getModelByAddressNo((string)$address);
+
         if (!$data) {
             ErrorListModel::insertInformation('No address of the device was found', ErrorListModel::ERROR_LOGIN);
             return null;
@@ -49,7 +52,7 @@ class OperateController extends PublicController
      * @param  string $string [description]
      * @return [type]         [description]
      */
-    public function heartbeat(string $string = ''){
+    public function heartbeat($string = ''){
         $string = 'EB901A000202xx300300420060000701014E14FB18C4506BE15F0XXXX';
         /**
          * 字符串是否为空
@@ -68,7 +71,7 @@ class OperateController extends PublicController
          */
         if(empty($info)) ErrorListModel::insertInformation('No address of the device was found！', 2);
         else{
-            $data['equipment_id'] = (int)$info['id'] ?? 0;//设备Id
+            $data['equipment_id'] = (int)$info['id'];//设备Id
             $data['createtime'] = (int)time();//创建时间
             $data['signal_percentage'] = empty($data['signal_percentage']) ? '' : $data['signal_percentage'];
             $data['container_type'] = base_convert(substr($string, 16, 2), 16, 10);//容器星号

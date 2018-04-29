@@ -104,7 +104,7 @@ class PublicController extends Controller
      * @param string $add_string
      * @return string [type]            [description]
      */
-    protected function string_before_add(string $string, int $length, string $add_string){
+    protected function string_before_add( $string,  $length,  $add_string){
         /**
          * 如果位置是负数的话，那么找出对应的正整数位置
          */
