@@ -9,7 +9,7 @@ return array(
     'DB_PWD'    => '',  // 密码  YhDB-mysql-5.7!
     'DB_PORT'   => '3306', // 端口
     'DB_PREFIX' => 'ymkj_', // 数据库表前缀
-    
+
     /* URL配置 */
     'URL_CASE_INSENSITIVE' => true, //默认false 表示URL区分大小写 true则表示不区分大小写
     'URL_MODEL'            => 1, //URL模式
