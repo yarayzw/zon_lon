@@ -13,7 +13,7 @@ class StatisticsController extends PublicController
 {
     private function getStatisticsByDay($address_no, $day)
     {
-        $day = !isset($day) ? $day : date('Y-m-d');
+        $day = isset($day) ? $day : date('Y-m-d');
         if (! $address_no) $this->ajax_return(10001, '', '数据缺失');
         $start_time = strtotime($day);
         $end_time = $start_time + 24 * 3600 - 1;
