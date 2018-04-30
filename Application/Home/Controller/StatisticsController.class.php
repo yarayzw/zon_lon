@@ -14,9 +14,9 @@ use Home\Model\EquipmentStatisticsModel;
 
 class StatisticsController extends PublicController
 {
-    private function getStatisticsByDay($day, $address_no)
+    private function getStatisticsByDay($address_no, $day)
     {
-        $day = isset($day) ? $day : date('Y-m-d');
+        $day = !isset($day) ? $day : date('Y-m-d');
         if (! $address_no) $this->ajax_return(10001, '', '数据缺失');
         $start_time = strtotime($day);
         $end_time = $start_time + 24 * 3600 - 1;
@@ -75,9 +75,9 @@ class StatisticsController extends PublicController
         // $where_data['equipment_id'] = explode(',', $data['equipment_id']);
         $where_data['start_time'] = is_date($data['start_time']) ? 0 : strtotime($data['start_time']);
         $where_data['end_time'] = is_date($data['end_time']) ? 0 : strtotime($data['end_time']);
-        if((int)$data['type'] == 4) return $this->getStatisticsByDay($data['equipment_id'], $where_data['start_time']);
+        if((int)$data['type'] == 4) return $this->getStatisticsByDay($data['equipment_id'], date('Y-m-d', $where_data['start_time']));
 
-        if(empty($data['equipment_id'])) $this->ajax_return(10001, '', '设备Id不可为空！');
+        if(empty($data['equipment_id'])) $this->ajax_return(10002, '', '设备Id不可为空！');
 
         $where_data['start_time'] = strtotime('2018-3-11');
         $where_data['end_time'] = time();
