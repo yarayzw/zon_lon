@@ -78,9 +78,8 @@ class StatisticsController extends PublicController
         if((int)$data['type'] == 4) return $this->getStatisticsByDay($data['equipment_id'], date('Y-m-d', $where_data['start_time']));
 
         if(empty($data['equipment_id'])) $this->ajax_return(10002, '', '设备Id不可为空！');
-
-        $where_data['start_time'] = strtotime('2018-3-11');
-        $where_data['end_time'] = time();
+        if(empty($where_data['start_time'])) $this->ajax_return(10003, '', '开始时间为必填项！');
+        if(empty($where_data['end_time'])) $this->ajax_return(10003, '', '结束时间为必填项！');
         $max_data = $min_data = $return_data = $date_list = [];
         $this_value = $agv_data = $iii = $count = $max_val = $min_val = 0;
         switch ((int)$data['type']) {
