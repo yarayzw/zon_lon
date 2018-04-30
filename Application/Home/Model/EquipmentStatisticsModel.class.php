@@ -46,7 +46,7 @@ class EquipmentStatisticsModel extends Model
     public static function createData($equipment_id = 0, $this_container_use_percentage = 0){
         $command = (new CommandListModel())->where(['equipment_id' => $equipment_id])->order('createtime DESC')->field('container_use_percentage')->find();
         if(!empty($command)){
-            $container_type = (new ContainerTypeModel())->where(['id' => $equipment_id])->field('capacity')->find();
+            $container_type = (new ContainerTypeModel())->where(['id' => $equipment_id, 'is_del' => 1])->field('capacity')->find();
             if($command['container_use_percentage'] > $this_container_use_percentage){
                 $quantity = ((100 - $this_container_use_percentage) + $command['container_use_percentage']) * $container_type['capacity'] / 100;
             }else{

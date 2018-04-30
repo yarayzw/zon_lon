@@ -87,7 +87,7 @@ class StatisticsController extends PublicController
         $where_data['start_time'] = is_date($data['start_time']) ? 0 : strtotime($data['start_time']);
         $where_data['end_time'] = is_date($data['end_time']) ? 0 : strtotime($data['end_time']);
         if((int)$data['type'] == 4) return $this->getStatisticsByDay($data['equipment_id'], date('Y-m-d', $where_data['start_time']));
-        $where_data['equipment_id'] = explode(',', $data['equipment_id']);
+        $where_data['equipment_id'] = implode(',', $data['equipment_id']);
         if(empty($where_data['equipment_id'])) $this->ajax_return(10002, '', '设备Id不可为空！');
         if(empty($where_data['start_time'])) $this->ajax_return(10003, '', '开始时间为必填项！');
         if(empty($where_data['end_time'])) $this->ajax_return(10004, '', '结束时间为必填项！');
