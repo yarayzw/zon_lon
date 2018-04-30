@@ -14,6 +14,10 @@ use Home\Model\EquipmentStatisticsModel;
 
 class StatisticsController extends PublicController
 {
+    /**
+     * @param $address_no
+     * @param $day
+     */
     private function getStatisticsByDay($address_no, $day)
     {
         $day = !isset($day) ? $day : date('Y-m-d');
@@ -31,18 +35,20 @@ class StatisticsController extends PublicController
         foreach ($statistics_data as $key => $value) {
             $result['count'] += $value['quantity'];
             $abscissa_middle[(int)date('H', $value['createtime'])] = [(int)date('H', $value['createtime']), $value['quantity']];
-            if ($value['quantity'] == $max) $result['max'][] = [date('H', $value['createtime']), $max];
-            if ($value['quantity'] == $min) $result['min'][] = [date('H', $value['createtime']), $min];
+            if ($value['quantity'] == $max) $result['max'][] = [(int)date('H', $value['createtime']), $max];
+            if ($value['quantity'] == $min) $result['min'][] = [(int)date('H', $value['createtime']), $min];
         }
         // 对不存在的时段插入数据中
         for ($i = 1; $i < 25; $i++) if (! key_exists($i, $abscissa_middle)) $abscissa_middle[$i] = [$i, 0];
         ksort($abscissa_middle);
-        $result['abscissa'] = [array_column($abscissa_middle, 0), array_column($abscissa_middle, 1)];
-        $result['ordinate'] =[ceil($max / 10) * 10,  ceil($max / 10)];
         // 平均值计算
-        $result['average'] = round($result['count'] / 24, 2);
-        $result['max'] = $this->getPercentage($result['average'], $result['max'], 1);
-        $result['min'] = $this->getPercentage($result['average'], $result['min'], 1);
+        $average = round($result['count'] / 24, 2);
+        $result['abscissa'] = [array_column($abscissa_middle, 0), array_column($abscissa_middle, 1)];
+        for ($i = 1; $i < 25; $i++) $average_arr[] = $average;
+        array_push($result['abscissa'], $average_arr);
+        $result['ordinate'] =[ceil($max / 10) * 10,  ceil($max / 10)];
+        $result['max'] = $this->getPercentage($result['average'], $result['max'], 1, 0);
+        $result['min'] = $this->getPercentage($result['average'], $result['min'], 1, 0);
         $this->ajax_return(10000, $result);
     }
 
@@ -51,15 +57,22 @@ class StatisticsController extends PublicController
      * @param $average
      * @param $array
      * @param int $index 需要比较的数字
-     * @return string
+     * @param $time_index
+     * @return array
      */
-    public function getPercentage($average, $array, $index)
+    public function getPercentage($average, $array, $index, $time_index)
     {
+        $new_array = [];
         foreach ($array as $k => $v) {
             $distance = abs($average - $v[$index]);
-            $array[$k][$index] = (round($distance / $average, 2) * 100) . '%';
+            $point = (round($distance / $average, 3) * 100) . '%';
+            $str = is_int($v[$time_index]) ? $v[$time_index] . '点' : $v[$time_index];
+            $str .= '产生的垃圾量比平均量';
+            $str .= $average > $v[$index] ? '低' : '高';
+            $str .= $point;
+            $new_array[] = $str;
         }
-        return $array;
+        return $new_array;
     }
 
     /**
