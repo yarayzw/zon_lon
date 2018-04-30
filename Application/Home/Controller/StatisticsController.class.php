@@ -7,17 +7,10 @@
  */
 
 namespace Home\Controller;
-
-
-
 use Home\Model\EquipmentStatisticsModel;
 
 class StatisticsController extends PublicController
 {
-    /**
-     * @param $address_no
-     * @param $day
-     */
     private function getStatisticsByDay($address_no, $day)
     {
         $day = !isset($day) ? $day : date('Y-m-d');
@@ -61,13 +54,14 @@ class StatisticsController extends PublicController
      * @param $time_index
      * @return array
      */
-    public function getPercentage($average, $array, $index, $time_index)
+    public function getPercentage($average, $array, $index, $time_index, $type = 0)
     {
         $new_array = [];
         foreach ($array as $k => $v) {
             $distance = abs($average - $v[$index]);
             $point = (round($distance / $average, 3) * 100) . '%';
             $str = is_int($v[$time_index]) ? $v[$time_index] . '点' : $v[$time_index];
+            if($type == 2) $str .= '月 ';
             $str .= '产生的垃圾量比平均量';
             $str .= $average > $v[$index] ? '低' : '高';
             $str .= $point;
@@ -88,19 +82,18 @@ class StatisticsController extends PublicController
     public function data_statistics(){
         $data = I('request.');
         $data['type'] = empty($data['type']) ? 0 : $data['type'];
-        // $where_data['equipment_id'] = explode(',', $data['equipment_id']);
+        if(!in_array($data['type'], [0, 1, 2, 4])) $this->ajax_return(10005, '', '类型有误！');
         $where_data['start_time'] = is_date($data['start_time']) ? 0 : strtotime($data['start_time']);
         $where_data['end_time'] = is_date($data['end_time']) ? 0 : strtotime($data['end_time']);
         if((int)$data['type'] == 4) return $this->getStatisticsByDay($data['equipment_id'], date('Y-m-d', $where_data['start_time']));
-
-        if(empty($data['equipment_id'])) $this->ajax_return(10002, '', '设备Id不可为空！');
-
-        $where_data['start_time'] = strtotime('2018-3-11');
-        $where_data['end_time'] = time();
+        $where_data['equipment_id'] = explode(',', $data['equipment_id']);
+        if(empty($where_data['equipment_id'])) $this->ajax_return(10002, '', '设备Id不可为空！');
+        if(empty($where_data['start_time'])) $this->ajax_return(10003, '', '开始时间为必填项！');
+        if(empty($where_data['end_time'])) $this->ajax_return(10004, '', '结束时间为必填项！');
         $max_data = $min_data = $return_data = $date_list = [];
         $this_value = $agv_data = $iii = $count = $max_val = $min_val = 0;
         switch ((int)$data['type']) {
-            case 1: //数据结果有问题
+            case 1: //周
                 $date_list = getWeek(date('Y-m-d', $where_data['start_time']), date('Y-m-d', $where_data['end_time']));
                 foreach ($date_list as $key => $value) {
                     $this_value = EquipmentStatisticsModel::getModelByTimeCount(strtotime($value[0] . ' 00:00:00'), strtotime($value[1] . ' 23:59:59'), $where_data['equipment_id']);
@@ -108,7 +101,8 @@ class StatisticsController extends PublicController
                     $count += $this_value;
                     $return_data[$key] = [
                         $value[0] . ' ~ ' . $value[1],
-                        $this_value
+                        $this_value,
+                        0
                     ];
                 }
                 break;
@@ -122,11 +116,12 @@ class StatisticsController extends PublicController
                     $count += $this_value;
                     $return_data[$kkk] = [
                         $vvv,
-                        $this_value
+                        $this_value,
+                        0
                     ];
                 }
                 break;
-            default:
+            default: //默认为天
                 $date_list = getDateRange2(date('Y-m-d', $where_data['start_time']), date('Y-m-d', $where_data['end_time']));
                 foreach ($date_list as $k => $v) {
                     $this_value = EquipmentStatisticsModel::getModelByTimeCount(strtotime($v . ' 00:00:00'), strtotime($v . ' 23:59:59'), $where_data['equipment_id']);
@@ -134,11 +129,15 @@ class StatisticsController extends PublicController
                     $count += $this_value;
                     $return_data[$k] = [
                         $v,
-                        $this_value
+                        $this_value,
+                        0
                     ];
                 }
                 break;
         }
+        /**
+         * 最大值、最小值的数组
+         */
         $max_val = max(array_column($return_data, '1', 0));
         $min_val = min(array_column($return_data, '1', 0));
         foreach ($return_data as $key => $value) {
@@ -146,9 +145,27 @@ class StatisticsController extends PublicController
             if($min_val == $value[1]) $min_data[] = $value;
         }
         $agv_data = number_format($count / count($date_list), 2);
+        // $max_data['max'] = $this->getPercentage($agv_data, $max_data, 1);
+        // $min_data['min'] = $this->getPercentage($agv_data, $min_data, 1);
+        $max_data['max'] = $this->getPercentage($agv_data, $max_data, 1, 0, $data['type']);
+        $min_data['min'] = $this->getPercentage($agv_data, $min_data, 1, 0, $data['type']);
+        
+        $abscissa = [
+            array_column($return_data, 0),
+            array_column($return_data, 1),
+            array_column($return_data, 2)
+        ];
+        /**
+         * 平均值追加到返回数组中
+         */
+        foreach ($abscissa as $key => $value) {
+            if($key == 2){
+                foreach ($value as $k => $value) $abscissa[$key][$k] = $agv_data;
+            }
+        }
         $return_array = [
             'count' => $count,
-            'abscissa' => $return_data,
+            'abscissa' => $abscissa,
             'max' => $max_data, //最大值
             'min' => $min_data, //最小值
             'average' => $agv_data, //平均值
