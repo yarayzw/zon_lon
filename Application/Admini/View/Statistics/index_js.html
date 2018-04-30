@@ -129,11 +129,9 @@
             },
             dataType: 'JSON',
             success: function(data){
+
                 if (data.code == 10000) {
-                    var y = new Array();
-                    for(var i = 0;i<=data.content.ordinate[0];i+= data.content.ordinate[1]){
-                        y.push(i);
-                    }
+
                     $("#text_div").empty();
                     for(var i = 0;i<data.content.max.length;i++){
                         $("#text_div").append("<div style='font-size: 20px;margin-bottom: 4px'>"+data.content.max[i]+"</div>");
