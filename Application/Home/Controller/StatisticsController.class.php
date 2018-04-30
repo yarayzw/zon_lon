@@ -14,10 +14,9 @@ use Home\Model\EquipmentStatisticsModel;
 
 class StatisticsController extends PublicController
 {
-    public function getStatisticsByDay()
+    public function getStatisticsByDay($day, $address_no)
     {
-        $day = isset($_POST['day']) ? $_POST['day'] : date('Y-m-d');
-        $address_no = isset($_POST['address']) ? $_POST['address'] : null;
+        $day = isset($day) ? $day : date('Y-m-d');
         if (! $address_no) $this->ajax_return(10001, '', '数据缺失');
         $start_time = strtotime($day);
         $end_time = $start_time + 24 * 3600 - 1;
@@ -61,9 +60,6 @@ class StatisticsController extends PublicController
         return $array;
     }
 
-
-    
-
     /**
      * [data_statistics 数据统计]
      * @return [type] [description]
@@ -76,11 +72,12 @@ class StatisticsController extends PublicController
     public function data_statistics(){
         $data = I('request.');
         $data['type'] = empty($data['type']) ? 0 : $data['type'];
-        if(empty($data['equipment_id'])) $this->ajax_return(10001, '', '设备Id不可为空！');
-
-        $where_data['equipment_id'] = explode(',', $data['equipment_id']);
+        // $where_data['equipment_id'] = explode(',', $data['equipment_id']);
         $where_data['start_time'] = is_date($data['start_time']) ? 0 : strtotime($data['start_time']);
         $where_data['end_time'] = is_date($data['end_time']) ? 0 : strtotime($data['end_time']);
+        if((int)$data['type'] == 4) return $this->getStatisticsByDay($data['equipment_id'], $where_data['start_time']);
+
+        if(empty($data['equipment_id'])) $this->ajax_return(10001, '', '设备Id不可为空！');
 
         $where_data['start_time'] = strtotime('2018-3-11');
         $where_data['end_time'] = time();
@@ -90,7 +87,6 @@ class StatisticsController extends PublicController
             case 1: //数据结果有问题
                 $date_list = getWeek(date('Y-m-d', $where_data['start_time']), date('Y-m-d', $where_data['end_time']));
                 foreach ($date_list as $key => $value) {
-                    $this_value = 0;
                     $this_value = EquipmentStatisticsModel::getModelByTimeCount(strtotime($value[0] . ' 00:00:00'), strtotime($value[1] . ' 23:59:59'), $where_data['equipment_id']);
                     $this_value = empty($this_value) ? 0 : $this_value;
                     $count += $this_value;
@@ -99,17 +95,10 @@ class StatisticsController extends PublicController
                         $this_value
                     ];
                 }
-                $max_val = max(array_column($return_data, '1', 0));
-                $min_val = min(array_column($return_data, '1', 0));
-                foreach ($return_data as $key => $value) {
-                    if($max_val == $value[1]) $max_data[] = $value;
-                    if($min_val == $value[1]) $min_data[] = $value;
-                }
                 break;
             case 2: //月份
                 $date_list = monthList($where_data['start_time'], $where_data['end_time']);
                 foreach ($date_list as $kkk => $vvv) {
-                    $this_value = 0;
                     $start_day = strtotime(date( 'Y-m-01 00:00:00', strtotime($vvv) ));
                     $end_day = strtotime(date( 'Y-m-' . date( 't', strtotime($vvv) ) . ' 23:59:59', strtotime($vvv) ));
                     $this_value = EquipmentStatisticsModel::getModelByTimeCount($start_day, $end_day, $where_data['equipment_id']);
@@ -120,17 +109,10 @@ class StatisticsController extends PublicController
                         $this_value
                     ];
                 }
-                $max_val = max(array_column($return_data, '1', 0));
-                $min_val = min(array_column($return_data, '1', 0));
-                foreach ($return_data as $key => $value) {
-                    if($max_val == $value[1]) $max_data[] = $value;
-                    if($min_val == $value[1]) $min_data[] = $value;
-                }
                 break;
             default:
                 $date_list = getDateRange2(date('Y-m-d', $where_data['start_time']), date('Y-m-d', $where_data['end_time']));
                 foreach ($date_list as $k => $v) {
-                    $this_value = 0;
                     $this_value = EquipmentStatisticsModel::getModelByTimeCount(strtotime($v . ' 00:00:00'), strtotime($v . ' 23:59:59'), $where_data['equipment_id']);
                     $this_value = empty($this_value) ? 0 : $this_value;
                     $count += $this_value;
@@ -139,13 +121,13 @@ class StatisticsController extends PublicController
                         $this_value
                     ];
                 }
-                $max_val = max(array_column($return_data, '1', 0));
-                $min_val = min(array_column($return_data, '1', 0));
-                foreach ($return_data as $key => $value) {
-                    if($max_val == $value[1]) $max_data[] = $value;
-                    if($min_val == $value[1]) $min_data[] = $value;
-                }
                 break;
+        }
+        $max_val = max(array_column($return_data, '1', 0));
+        $min_val = min(array_column($return_data, '1', 0));
+        foreach ($return_data as $key => $value) {
+            if($max_val == $value[1]) $max_data[] = $value;
+            if($min_val == $value[1]) $min_data[] = $value;
         }
         $agv_data = number_format($count / count($date_list), 2);
         $return_array = [
