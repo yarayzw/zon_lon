@@ -75,7 +75,7 @@ class EquipmentStatisticsModel extends Model
      * @param  [type]  $equipment_id [description]
      * @return [type]                [description]
      */
-    public static function getModelByTimeCount($start_time = 0, $end_time, $equipment_id){
+    public static function getModelByTimeCount($start_time = 0, $end_time, $equipment_id = []){
         $model = M('equipment_statistics');
         $condition = [
             'createtime' => ['between', "{$start_time}, {$end_time}"],

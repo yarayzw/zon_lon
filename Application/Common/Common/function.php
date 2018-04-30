@@ -551,7 +551,7 @@ function xing_preg($str, $start = 3, $re = '*')
  * @return boolean       [description]
  */
 function is_date($date){
-    if(date('m-d-Y H:i:s',strtotime($date)) === $date) return true;
+    if(date('Y-m-d H:i:s',strtotime($date)) === $date) return true;
     else return false;
 }
 
