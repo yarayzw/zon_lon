@@ -31,11 +31,11 @@ class SocketController extends PublicController
             ErrorListModel::insertInformation('server create fail:' . socket_strerror(socket_last_error()));
         }
         if (socket_bind($socket, $this->ip, $this->port) == false) {
-           ErrorListModel::insertInformation('server bind fail:' . socket_strerror(socket_last_error()));
+//           ErrorListModel::insertInformation('server bind fail:' . socket_strerror(socket_last_error()));
         }
         // 监听套接流
         if (socket_listen($socket, 4) == false) {
-            ErrorListModel::insertInformation('server listen fail:' . socket_strerror(socket_last_error()));
+//            ErrorListModel::insertInformation('server listen fail:' . socket_strerror(socket_last_error()));
         }
         // 非阻塞
         socket_set_block($socket);
