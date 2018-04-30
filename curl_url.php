@@ -22,6 +22,7 @@
                   
         $response = curl_exec($curl);
         $response = false;
+        // if(in_array(curl_errno($curl), [0, 28])) curl_url_($url);//超时处理操作
         if($response === false)  
         {
             // var_dump('error---' . curl_errno($curl));
@@ -47,6 +48,7 @@
                   
         $response = curl_exec($curl);
         $response = false;
+        // if(in_array(curl_errno($curl), [0, 28])) curl_url($url);//超时处理操作
         if($response === false)  
         {
             // var_dump('error---' . curl_errno($curl));

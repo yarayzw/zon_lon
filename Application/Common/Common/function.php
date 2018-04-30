@@ -544,3 +544,91 @@ function xing_preg($str, $start = 3, $re = '*')
 
     return $pre;
 }
+
+/**
+ * [is_date 是否为日期格式]
+ * @param  [type]  $date [description]
+ * @return boolean       [description]
+ */
+function is_date($date){
+    if(date('m-d-Y H:i:s',strtotime($date)) === $date) return true;
+    else return false;
+}
+
+/**
+* 获取指定日期之间的各个月的起始日期
+*/
+function monthList($start,$end){
+    if(!is_numeric($start)||!is_numeric($end)||($end<=$start)) return '';
+    $start=date('Y-m',$start);
+    $end=date('Y-m',$end);
+    //转为时间戳
+    $start=strtotime($start.'-01');
+    $end=strtotime($end.'-01');
+    $i=0;//http://www.phpernote.com/php-function/224.html
+    $d=array();
+    while($start<=$end){
+        //这里累加每个月的的总秒数 计算公式：上一月1号的时间戳秒数减去当前月的时间戳秒数
+        $d[$i]=trim(date('Y-m',$start),' ');
+        $start+=strtotime('+1 month',$start)-$start;
+        $i++;
+    } 
+    return $d;
+}
+
+/*  作用由起止日期算出其中的周
+ *  @param start_date 开始日期
+ *  @param end_date   结束日期
+ *  @return 一个二维数组，其中一维为每周起止时间
+ *  @author anngly
+     *  @date 2013-06-08
+     *  注意：end_date>state_date
+ **/
+ 
+function getWeek($startdate,$enddate)
+{
+    //参数不能为空
+    if(!empty($startdate) && !empty($enddate)){
+
+        //先把两个日期转为时间戳
+        $startdate=strtotime($startdate);
+        $enddate=strtotime($enddate);
+        //开始日期不能大于结束日期
+        if($startdate<=$enddate){
+            $end_date=strtotime("next monday",$enddate);
+            if(date("w",$startdate)==1){
+                $start_date=$startdate;
+            }else{
+                $start_date=strtotime("last monday",$startdate);
+            }
+            //计算时间差多少周
+            $countweek=($end_date-$start_date)/(7*24*3600);
+            for($i=0;$i<$countweek;$i++){
+                $sd=date("Y-m-d",$start_date);
+                $ed=strtotime("+ 6 days",$start_date);
+                $eed=date("Y-m-d",$ed);
+                $arr[]=array($sd,$eed);
+                $start_date=strtotime("+ 1 day",$ed);
+            }
+            return $arr;    
+        }
+    }
+}
+
+/**
+ * 获取指定日期段内每一天的日期
+ * @date 2017-02-23 14:50:29
+ *
+ * @param $start
+ * @param $end
+ *
+ * @return array
+ */
+function getDateRange2($start, $end) {
+    $range = [];
+    for ($i = 0; strtotime($start . '+' . $i . ' days') <= strtotime($end); $i++) {
+        $time = strtotime($start . '+' . $i . ' days');
+        $range[] = date('Y-m-d', $time);
+    }
+    return $range;
+}
