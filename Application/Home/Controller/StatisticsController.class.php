@@ -41,8 +41,8 @@ class StatisticsController extends PublicController
         for ($i = 1; $i < 25; $i++) $average_arr[] = $average;
         array_push($result['abscissa'], $average_arr);
         $result['ordinate'] =[ceil($max / 10) * 10,  ceil($max / 10)];
-        $result['max'] = $this->getPercentage($result['average'], $result['max'], 1, 0);
-        $result['min'] = $this->getPercentage($result['average'], $result['min'], 1, 0);
+        $result['max'] = $this->getPercentage($average, $result['max'], 1, 0);
+        $result['min'] = $this->getPercentage($average, $result['min'], 1, 0);
         $this->ajax_return(10000, $result);
     }
 
@@ -52,6 +52,7 @@ class StatisticsController extends PublicController
      * @param $array
      * @param int $index 需要比较的数字
      * @param $time_index
+     * @param int $type
      * @return array
      */
     public function getPercentage($average, $array, $index, $time_index, $type = 0)
