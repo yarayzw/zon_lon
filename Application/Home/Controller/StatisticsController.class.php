@@ -27,15 +27,17 @@ class StatisticsController extends PublicController
         $all_data = array_column($statistics_data, 'quantity', 'createtime');
         $max = max($all_data);
         $min = min($all_data);
+        $abscissa_middle = [];
         foreach ($statistics_data as $key => $value) {
             $result['count'] += $value['quantity'];
-            $result['abscissa'][(int)date('H', $value['createtime'])] = [(int)date('H', $value['createtime']), $value['quantity']];
+            $abscissa_middle[(int)date('H', $value['createtime'])] = [(int)date('H', $value['createtime']), $value['quantity']];
             if ($value['quantity'] == $max) $result['max'][] = [date('H', $value['createtime']), $max];
             if ($value['quantity'] == $min) $result['min'][] = [date('H', $value['createtime']), $min];
         }
         // 对不存在的时段插入数据中
-        for ($i = 1; $i < 25; $i++) if (! key_exists($i, $result['abscissa'])) $result['abscissa'][$i] = [$i, 0];
-        ksort($result['abscissa']);
+        for ($i = 1; $i < 25; $i++) if (! key_exists($i, $abscissa_middle)) $abscissa_middle[$i] = [$i, 0];
+        ksort($abscissa_middle);
+        $result['abscissa'] = [array_column($abscissa_middle, 0), array_column($abscissa_middle, 1)];
         $result['ordinate'] =[ceil($max / 10) * 10,  ceil($max / 10)];
         // 平均值计算
         $result['average'] = round($result['count'] / 24, 2);
