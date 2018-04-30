@@ -9,7 +9,12 @@ return array(
     'DB_PWD'    => '',  // 密码  YhDB-mysql-5.7!
     'DB_PORT'   => '3306', // 端口
     'DB_PREFIX' => 'ymkj_', // 数据库表前缀
-
+    
+    /* URL配置 */
+    'URL_CASE_INSENSITIVE' => true, //默认false 表示URL区分大小写 true则表示不区分大小写
+    'URL_MODEL'            => 1, //URL模式
+    'VAR_URL_PARAMS'       => '', // PATHINFO URL参数变量
+    'URL_PATHINFO_DEPR'    => '/', //PATHINFO URL分割符
 
     /* 模板相关配置 */
     'TMPL_PARSE_STRING' => array(
@@ -20,4 +25,5 @@ return array(
         '__JS__'     => __ROOT__ . '/Public/js',
         '__H3__'     => __ROOT__ . '/Public/h3',
     )
+
 );
