@@ -13,11 +13,12 @@ class StatisticsController extends PublicController
 {
     private function getStatisticsByDay($address_no, $day)
     {
-        $day = isset($day) ? $day : date('Y-m-d');
+        $day = ($day && $day != '1970-01-01') ? $day : date('Y-m-d');
         if (! $address_no) $this->ajax_return(10001, '', '数据缺失');
         $start_time = strtotime($day);
         $end_time = $start_time + 24 * 3600 - 1;
         $statistics = EquipmentStatisticsModel::getModelByTimeAndEquipment($start_time, $end_time, $address_no);
+        if (!$statistics) $this->ajax_return(10001, '', '信息不存在');
         $statistics_data = [];
         foreach ($statistics as $k => $v) {
             if (key_exists($v['createtime'], $statistics_data)) {
@@ -26,7 +27,6 @@ class StatisticsController extends PublicController
                 $statistics_data[$v['createtime']] = $v;
             }
         }
-        if (!$statistics_data) $this->ajax_return(10001, '', '信息不存在');
         // 总和
         $result = ['count' => 0];
         $all_data = array_column($statistics_data, 'quantity', 'createtime');
