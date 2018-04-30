@@ -14,7 +14,7 @@ use Home\Model\EquipmentStatisticsModel;
 
 class StatisticsController extends PublicController
 {
-    public function getStatisticsByDay($day, $address_no)
+    private function getStatisticsByDay($day, $address_no)
     {
         $day = isset($day) ? $day : date('Y-m-d');
         if (! $address_no) $this->ajax_return(10001, '', '数据缺失');
