@@ -17,13 +17,21 @@ class StatisticsController extends PublicController
         if (! $address_no) $this->ajax_return(10001, '', '数据缺失');
         $start_time = strtotime($day);
         $end_time = $start_time + 24 * 3600 - 1;
-        $statistics_data = EquipmentStatisticsModel::getModelByTimeAndEquipment($start_time, $end_time, $address_no);
+        $statistics = EquipmentStatisticsModel::getModelByTimeAndEquipment($start_time, $end_time, $address_no);
+        $statistics_data = [];
+        foreach ($statistics as $k => $v) {
+            if (key_exists($v['createtime'], $statistics_data)) {
+                $statistics_data[$v['createtime']]['quantity'] += $v['quantity'];
+            } else {
+                $statistics_data[$v['createtime']] = $v;
+            }
+        }
         if (!$statistics_data) $this->ajax_return(10001, '', '信息不存在');
         // 总和
         $result = ['count' => 0];
         $all_data = array_column($statistics_data, 'quantity', 'createtime');
         $max = max($all_data);
-        $min = min($all_data);
+        $min = count($all_data) < 24 ? 0 : min($all_data);
         $abscissa_middle = [];
         foreach ($statistics_data as $key => $value) {
             $result['count'] += $value['quantity'];
