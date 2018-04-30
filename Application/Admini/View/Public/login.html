@@ -21,7 +21,7 @@
 
 </head>
 
-<body class="signin" style="background:url(/htrjServer_new/Public/img/admin/login-background.jpg)">
+<body class="signin" style="background:url(/Public/img/admin/login-background.jpg)">
 <div class="signinpanel">
     <div class="row">
         <div style="text-align: center" class="col-sm-7">
@@ -42,8 +42,8 @@
             <form id="fromSubmit" method="post" onsubmit="" action="{:U('Public/do_login')}">
                 <h4 class="no-margins">登录：</h4>
                 <p class="m-t-md">后台管理系统</p>
-                <input type="text" name="account" maxlength="22" class="form-control uname" placeholder="用户名" style="background:#fff url(/htrjServer_new/Public/img/admin/user.png) no-repeat 95% center;"/>
-                <input type="password" name="password" maxlength="32" class="form-control pword m-b" style="background:#fff url(/htrjServer_new/Public/img/admin/locked.png) no-repeat 95% center;" placeholder="密码" />
+                <input type="text" name="account" maxlength="22" class="form-control uname" placeholder="用户名" style="background:#fff url(/Public/img/admin/user.png) no-repeat 95% center;"/>
+                <input type="password" name="password" maxlength="32" class="form-control pword m-b" style="background:#fff url(/Public/img/admin/locked.png) no-repeat 95% center;" placeholder="密码" />
                 <input type="text" name="verity" maxlength="6" class="form-control pword m-b" placeholder="验证码" />
                 <img id="btnVerity" style="cursor: pointer;" title="点击换一张" alt="点击换一张" src="{:U('Public/verifyimg/')}">
                 <button type="submit" class="btn btn-success btn-block">登录</button>
