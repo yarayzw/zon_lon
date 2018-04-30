@@ -60,7 +60,7 @@ class StatisticsController extends PublicController
         $new_array = [];
         foreach ($array as $k => $v) {
             $distance = abs($average - $v[$index]);
-            $point = (round($distance / $average, 3) * 100) . '%';
+            $point = $average != 0 ? (round($distance / $average, 3) * 100) . '%' : 0;
             $str = is_int($v[$time_index]) ? $v[$time_index] . '点' : $v[$time_index];
             if($type == 2) $str .= '月 ';
             $str .= '产生的垃圾量比平均量';
