@@ -1,0 +1,167 @@
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.6&key=406d0f16fe44afb0344d60e2986a5445&plugin=AMap.Autocomplete,AMap.Geocoder"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="__JS__/admin/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="__JS__/admin/demo/bootstrap-table-demo.min.js"></script>
+<script src="__JS__/admin/bootstrapValidator.js"></script>
+<script src="__JS__/admin/bootstrapValidator.min.js"></script>
+<script src="__JS__/admin/index.js"></script>
+<script type="text/javascript">
+
+    //地图开始
+    var map = new AMap.Map('map',{
+        zoom: 10,
+        center: [116.39,39.9]
+    });
+   //画点
+    function setMark(arr) {
+        map.clearMap();
+        var markers = [],positions = arr;
+        for (var i = 0, marker; i < positions.length; i++) {
+            if(positions[i][0]>0){
+                new AMap.Marker({
+                    map: map,
+                    position: positions[i],
+                    icon: new AMap.Icon({
+                        size: new AMap.Size(40, 50),  //图标大小
+                        image: "http://webapi.amap.com/theme/v1.3/images/newpc/way_btn2.png",
+                        imageOffset: new AMap.Pixel(0, -60)
+                    })
+                });
+            }
+
+        }
+    }
+
+    //地图结束
+
+
+    function initTable() {
+        //先销毁表格
+        $('#userListTable').bootstrapTable('destroy');
+        //初始化表格,动态从服务器加载数据
+        $("#userListTable").bootstrapTable({
+            url: '{:U("Index/main")}', //获取数据的Servlet地址
+            striped: true,  //表格显示条纹
+            pagination: true, //启动分页
+            sortName: 'id',
+            pageSize: 15,  //每页显示的记录数
+            pageNumber:1, //当前第几页
+            pageList: [10, 15, 20, 25],  //记录数可选列表
+            search: false,
+            toolbar: '#list_search',
+            showColumns: true,  //显示下拉框勾选要显示的列
+            showRefresh: true,  //显示刷新按钮
+            clickToSelect: true,
+            sidePagination: "server", //表示服务端请求
+            //设置为undefined可以获取pageNumber，pageSize，searchText，sortName，sortOrder
+            //设置为limit可以获取limit, offset, search, sort, order
+            responseHandler:function(res){
+                //远程数据加载之前,处理程序响应数据格式,对象包含的参数: 我们可以对返回的数据格式进行处理
+                //在ajax后我们可以在这里进行一些事件的处理
+                return res.data;
+            },
+            queryParamsType : "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    //这里是在ajax发送请求的时候设置一些参数 params有什么东西，自己看看源码就知道了
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    sortName: params.sortName,
+                    sortOrder: params.sortOrder,
+                    address : $('#address').val(),
+                    'action': 'ajax'
+                };
+                return param;
+            },
+            onLoadSuccess: function(data){  //加载成功时执行
+                var rs = new Array();
+                for(var i = 0;i<data.rows.length;i++){
+                    rs.push(data.rows[i]['id'])
+                }
+
+                getMarkList(rs);
+                if(data.success==400){
+                    layer.msg(data.message, {time : 1500, icon : 2});
+                }
+            },
+            onLoadError: function(){  //加载失败时执行
+                layer.msg("加载数据失败", {time : 1500, icon : 2});
+            },
+            onClickRow: function (row) {
+                var rs = new Array();
+                rs.push(row.id);
+                getMarkList(rs);
+            },
+            columns: [
+//                {
+//                    field: 'state',
+//                    checkbox: true,
+//                    align: 'center',
+//                    valign: 'middle'
+//                },
+                {
+                    title: 'ID',
+                    field: 'id',
+                    align: 'center',
+                    valign: 'middle'
+                },
+                {
+                    field: 'equipment_address',
+                    title: '地址',
+                    sortable: true,
+                    align: 'center'
+                },
+                {
+                    field: 'createtime',
+                    title: '添加时间',
+                    sortable: true,
+                    align: 'center'
+                }
+            ]
+        });
+    }
+
+    $(document).ready(function () {
+        //调用函数，初始化表格
+        initTable();
+
+        //当点击查询按钮的时候执行
+        $("#search").bind("click", initTable);
+    });
+    //搜索
+    function p_search() {
+
+        $("#userListTable").bootstrapTable('refresh');
+    }
+    var arrs;
+    //获取点数组
+    function getMarkList(arr) {
+        arrs = arr;
+        setInterval(getMarkListGo, 4000);
+    }
+    function getMarkListGo() {
+        var arr = arrs;
+
+        $.ajax({
+            method: "post",
+            url: '{:U("Index/main")}',
+            data:{
+                action: 'getMarkList',
+                arr: arr
+            },
+            dataType: 'JSON',
+            success: function(data){
+                if (data.code == 200) {
+                    setMark(data.rows);
+                } else {
+                    layer.msg("加载数据失败", {time : 1500, icon : 2});
+                }
+            },
+            error:function(){
+                alert('数据错误！');
+            }
+        });
+    }
+
+
+</script>

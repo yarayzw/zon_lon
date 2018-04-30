@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <include file="Public/common_header"/>
+    <link href="__CSS__/admin/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+    <link href="__CSS__/admin/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+
+    <script src="__JS__/admin/echarts.min.js"></script>
+    <script src="__JS__/admin/extendjs/china.js"></script>
+
+    <script src="__JS__/admin/jquery.min.js"></script>
+</head>
+<body>
+<style>
+    .bgcolor{background:#F2F2F2;}
+</style>
+<!-- Panel Other -->
+<div class="ibox float-e-margins">
+    <div class="ibox-title">
+        <h5>统计列表</h5>
+        <div class="ibox-tools">
+            <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+            </a>
+            <a class="close-link">
+                <i class="fa fa-times"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <div style="float: left;width: 40%;height: 600px;padding-top: 5%;">
+            <div class="col-sm-12" style="margin-left: 0px;margin-right: 0px;padding-right: 0px;padding-left: 0px;" >
+                <!-- Example Toolbar -->
+                <div class="example-wrap" >
+                    <div class="example" >
+                        <div class="btn-group hidden-xs" id="exampleToolbar" role="group">
+
+                        </div>
+                        <table class="table table-hover" id="userListTable"
+                               data-pagination="true"
+                               data-show-refresh="true"
+                               data-show-toggle="true"
+                               data-showColumns="true" >
+                        </table>
+                    </div>
+
+                </div>
+
+                <!-- End Example Toolbar -->
+            </div>
+            <div style="width: 100%;height: 200px;float: left" id="text_div">
+
+            </div>
+        </div>
+        <div  style="float: right;width: 600px;height: 600px;">
+            <div id="rate_of_increase" style="width: 600px;height: 650px;"></div>
+        </div>
+    </div>
+</div>
+<div >
+    <form id="list_search">
+        <fieldset>
+            <div style="float: left;width: 160px;margin-right: 10px" class="input-group m-b" ><span id="str_text" class="input-group-addon">开始日期</span>
+                <input type="date" id="s"  name="str_time" style="width: 120px;height: 34px;">
+            </div>
+            <div style="float: left;width: 180px;margin-right: 10px" class="input-group m-b" ><span class="input-group-addon">设备地址</span>
+                <input type="text"  name="address" id="address" placeholder="" class="form-control">
+            </div>
+            <div id="end_time" style="float: left;width: 160px;margin-right: 10px" class="input-group m-b" ><span class="input-group-addon">结束日期</span>
+                <input type="date" id="e" name="end_time"  style="width: 120px;height: 34px;">
+            </div>
+
+
+            <button style="float: right;margin-right: 15px" type="button" onclick="p_search();" class="btn">查询</button>
+        </fieldset>
+    </form>
+</div>
+<include file="Public/common_footer" />
+<include file="Statistics/index_js" />
+</body>
+<script>
+    var type = 4;
+    var iiddss;
+    $(function(){
+        console.log(type);
+        setGoType(type);
+        initTable();
+        rate_of_increase_function();
+    });
+    var rate_of_increase = echarts.init(document.getElementById('rate_of_increase'));
+
+    rate_of_increase.setOption({
+
+        barWidth: 10,
+        toolbox: {
+            show : true,
+            feature : {
+                myTool1: {
+                    show: true,
+                    title: '小时',
+                    icon: 'image://__IMG__/admin/left.png',
+                    onclick: function (){
+                      setGoType(3);
+                    }
+                },
+                myTool2: {
+                    show: true,
+                    title: '周',
+                    icon: 'image://__IMG__/admin/left.png',
+                    onclick: function (){
+                        setGoType(0);
+                    }
+                },
+                myTool3: {
+                    show: true,
+                    title: '年',
+                    icon: 'image://__IMG__/admin/left.png',
+                    onclick: function (){
+                        setGoType(1);
+                    }
+                },
+                myTool4: {
+                    show: true,
+                    title: '日均次数',
+                    icon: 'image://__IMG__/admin/left.png',
+                    onclick: function (){
+                        setGoType(2);
+                    }
+                },
+                saveAsImage: {show: true}
+            }
+        },
+        tooltip : {
+            trigger: 'axis',
+            axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+                type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis : [
+            {
+                type : 'category',
+                data : ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                axisTick: {
+                    alignWithLabel: true
+                },
+                nameTextStyle:{
+                    color: '#fff',
+                    fontsize: 5,
+                }
+            }
+        ],
+        yAxis : [
+            {
+                type : 'value',
+                nameTextStyle:{
+                    color: '#fff',
+                }
+            },
+            {
+                type: 'value',
+                name: '平均值',
+                axisLabel: {
+                    formatter: '{value}',
+                    interval: 0
+                }
+            }
+        ],
+    });
+    function rate_of_increase_function(){
+        rate_of_increase.setOption({});
+    }
+</script>
+</html>

@@ -37,11 +37,12 @@ class StatisticsController extends PublicController
         // 平均值计算
         $average = round($result['count'] / 24, 2);
         $result['abscissa'] = [array_column($abscissa_middle, 0), array_column($abscissa_middle, 1)];
+        $average_arr = [];
         for ($i = 1; $i < 25; $i++) $average_arr[] = $average;
         array_push($result['abscissa'], $average_arr);
         $result['ordinate'] =[ceil($max / 10) * 10,  ceil($max / 10)];
-        $result['max'] = $this->getPercentage($result['average'], $result['max'], 1, 0);
-        $result['min'] = $this->getPercentage($result['average'], $result['min'], 1, 0);
+        $result['max'] = $this->getPercentage($average, $result['max'], 1, 0);
+        $result['min'] = $this->getPercentage($average, $result['min'], 1, 0);
         $this->ajax_return(10000, $result);
     }
 
@@ -51,6 +52,7 @@ class StatisticsController extends PublicController
      * @param $array
      * @param int $index 需要比较的数字
      * @param $time_index
+     * @param int $type
      * @return array
      */
     public function getPercentage($average, $array, $index, $time_index, $type = 0)
@@ -58,7 +60,7 @@ class StatisticsController extends PublicController
         $new_array = [];
         foreach ($array as $k => $v) {
             $distance = abs($average - $v[$index]);
-            $point = (round($distance / $average, 3) * 100) . '%';
+            $point = $average != 0 ? (round($distance / $average, 3) * 100) . '%' : 0;
             $str = is_int($v[$time_index]) ? $v[$time_index] . '点' : $v[$time_index];
             if($type == 2) $str .= '月 ';
             $str .= '产生的垃圾量比平均量';

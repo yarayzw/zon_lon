@@ -119,10 +119,20 @@ class IndexController extends CommonController {
         $rs = $mysql->query($sql);
         $row = [];
         foreach ($rs as $k=>$v){
-            $row[] = [
-                0=>$v['latitude'],
-                1=>$v['longitude']
-            ];
+            if((time()-$v['max_time'])>300){
+                $row[] = [
+                    0=>$v['latitude'],
+                    1=>$v['longitude'],
+                    2=>2
+                ];
+            }else{
+                $row[] = [
+                    0=>$v['latitude'],
+                    1=>$v['longitude'],
+                    2=>1
+                ];
+            }
+
         }
         echo json_encode(['code'=>200,'rows'=>$row]);die;
     }

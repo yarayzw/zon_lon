@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <include file="Public/common_header" />
+    <link href="__CSS__/admin/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css" rel="stylesheet">
+    <link href="__CSS__/admin/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+</head>
+<body>
+<style>
+    .bgcolor{background:#F2F2F2;}
+</style>
+<!-- Panel Other -->
+<div class="ibox float-e-margins">
+    <div class="ibox-title">
+        <h5>管理员列表</h5>
+        <div class="ibox-tools">
+            <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+            </a>
+            <a class="close-link">
+                <i class="fa fa-times"></i>
+            </a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <div class="row row-lg">
+            <div class="col-sm-12" style="width: 50%;margin-right: 0px;float: left">
+                <!-- Example Toolbar -->
+                <div class="example-wrap" >
+                    <div class="example" >
+                        <div class="btn-group hidden-xs" id="exampleToolbar" role="group">
+
+                        </div>
+                        <table class="table table-hover" id="userListTable"
+                               data-pagination="true"
+                               data-show-refresh="true"
+                               data-show-toggle="true"
+                               data-showColumns="true" >
+                        </table>
+                    </div>
+
+                </div>
+
+                <!-- End Example Toolbar -->
+            </div>
+            <div id="map" style="width: 48%;height: 500px;background-color: #7aba7b;float: right;margin-right: 2%">
+
+            </div>
+        </div>
+    </div>
+</div>
+<div >
+    <form id="list_search">
+        <fieldset>
+            <div style="float: left;width: 180px;margin-right: 10px" class="input-group m-b" ><span class="input-group-addon">设备地址</span>
+                <input type="text" name="address" id="address" placeholder="" class="form-control">
+            </div>
+            <button style="float: right" type="button" onclick="p_search();" class="btn">查询</button>
+        </fieldset>
+    </form>
+</div>
+<include file="Public/common_footer" />
+<include file="Index/main_js" />
+</body>
+
+</html>
