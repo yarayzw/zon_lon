@@ -44,6 +44,7 @@ class StatisticsController extends PublicController
         // 平均值计算
         $average = round($result['count'] / 24, 2);
         $result['abscissa'] = [array_column($abscissa_middle, 0), array_column($abscissa_middle, 1)];
+        $average_arr = [];
         for ($i = 1; $i < 25; $i++) $average_arr[] = $average;
         array_push($result['abscissa'], $average_arr);
         $result['ordinate'] =[ceil($max / 10) * 10,  ceil($max / 10)];
