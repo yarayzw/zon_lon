@@ -6,11 +6,11 @@
 <script src="__JS__/admin/bootstrapValidator.min.js"></script>
 <script src="__JS__/admin/index.js"></script>
 <script type="text/javascript">
-
+    var _IMG_ = '__IMG__';
     //地图开始
     var map = new AMap.Map('map',{
-        zoom: 10,
-        center: [116.39,39.9]
+        zoom: 8,
+        center: [112.59,28.12]
     });
    //画点
     function setMark(arr) {
@@ -23,8 +23,26 @@
                     position: positions[i],
                     icon: new AMap.Icon({
                         size: new AMap.Size(40, 50),  //图标大小
-                        image: "http://webapi.amap.com/theme/v1.3/images/newpc/way_btn2.png",
+                        image: _IMG_+"/admin/lvlj.png",
                         imageOffset: new AMap.Pixel(0, -60)
+                    })
+                });
+            }
+
+        }
+    }
+    //画点
+    function setMarkDel(arr) {
+        var markers = [],positions = arr;
+        for (var i = 0, marker; i < positions.length; i++) {
+            if(positions[i][0]>0){
+                new AMap.Marker({
+                    map: map,
+                    position: positions[i],
+                    icon: new AMap.Icon({
+                        size: new AMap.Size(40, 50),  //图标大小
+                        image: _IMG_+"/admin/honglj.png",
+
                     })
                 });
             }
@@ -78,8 +96,8 @@
                 for(var i = 0;i<data.rows.length;i++){
                     rs.push(data.rows[i]['id'])
                 }
-
                 getMarkList(rs);
+
                 if(data.success==400){
                     layer.msg(data.message, {time : 1500, icon : 2});
                 }
@@ -124,7 +142,6 @@
     $(document).ready(function () {
         //调用函数，初始化表格
         initTable();
-
         //当点击查询按钮的时候执行
         $("#search").bind("click", initTable);
     });
@@ -134,14 +151,14 @@
         $("#userListTable").bootstrapTable('refresh');
     }
     var arrs;
+    var arrsDel ;
     //获取点数组
     function getMarkList(arr) {
         arrs = arr;
-        setInterval(getMarkListGo, 4000);
+        setInterval(getMarkListGo, 2000);
     }
     function getMarkListGo() {
         var arr = arrs;
-
         $.ajax({
             method: "post",
             url: '{:U("Index/main")}',
@@ -152,7 +169,20 @@
             dataType: 'JSON',
             success: function(data){
                 if (data.code == 200) {
-                    setMark(data.rows);
+                    var rs = new Array();
+                    var rss = new Array();
+                    for (var i = 0;i<data.rows.length;i++){
+                        var status = data.rows[i][2];
+                        var i = [data.rows[i][0],data.rows[i][1]];
+                        if(status == 1){
+                            rs.push(i);
+                        }else {
+                            rss.push(i);
+                        }
+                    }
+
+                    setMark(rs);
+                    setMarkDel(rss);
                 } else {
                     layer.msg("加载数据失败", {time : 1500, icon : 2});
                 }
