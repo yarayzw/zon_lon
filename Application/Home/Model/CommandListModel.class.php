@@ -9,7 +9,7 @@
 namespace Home\Model;
 use Think\Model;
 
-class CommanListModel extends Model
+class CommandListModel extends Model
 {
     protected static $table_name = 'command_list';
 
@@ -24,6 +24,5 @@ class CommanListModel extends Model
         $data = $model->data($data)->add();
         return $data;
     }
-
 
 }

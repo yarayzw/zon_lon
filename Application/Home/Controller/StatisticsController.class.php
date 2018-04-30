@@ -61,4 +61,104 @@ class StatisticsController extends PublicController
         return $array;
     }
 
+
+    
+
+    /**
+     * [data_statistics 数据统计]
+     * @return [type] [description]
+     *
+     * 类型：
+     *    天 0
+     *    周 1
+     *    月 2
+     */
+    public function data_statistics(){
+        $data = I('request.');
+        $data['type'] = empty($data['type']) ? 0 : $data['type'];
+        if(empty($data['equipment_id'])) $this->ajax_return(10001, '', '设备Id不可为空！');
+
+        $where_data['equipment_id'] = explode(',', $data['equipment_id']);
+        $where_data['start_time'] = is_date($data['start_time']) ? 0 : strtotime($data['start_time']);
+        $where_data['end_time'] = is_date($data['end_time']) ? 0 : strtotime($data['end_time']);
+
+        $where_data['start_time'] = strtotime('2018-3-11');
+        $where_data['end_time'] = time();
+        $max_data = $min_data = $return_data = $date_list = [];
+        $this_value = $agv_data = $iii = $count = $max_val = $min_val = 0;
+        switch ((int)$data['type']) {
+            case 1: //数据结果有问题
+                $date_list = getWeek(date('Y-m-d', $where_data['start_time']), date('Y-m-d', $where_data['end_time']));
+                foreach ($date_list as $key => $value) {
+                    $this_value = 0;
+                    $this_value = EquipmentStatisticsModel::getModelByTimeCount(strtotime($value[0] . ' 00:00:00'), strtotime($value[1] . ' 23:59:59'), $where_data['equipment_id']);
+                    $this_value = empty($this_value) ? 0 : $this_value;
+                    $count += $this_value;
+                    $return_data[$key] = [
+                        $value[0] . ' ~ ' . $value[1],
+                        $this_value
+                    ];
+                }
+                $max_val = max(array_column($return_data, '1', 0));
+                $min_val = min(array_column($return_data, '1', 0));
+                foreach ($return_data as $key => $value) {
+                    if($max_val == $value[1]) $max_data[] = $value;
+                    if($min_val == $value[1]) $min_data[] = $value;
+                }
+                break;
+            case 2: //月份
+                $date_list = monthList($where_data['start_time'], $where_data['end_time']);
+                foreach ($date_list as $kkk => $vvv) {
+                    $this_value = 0;
+                    $start_day = strtotime(date( 'Y-m-01 00:00:00', strtotime($vvv) ));
+                    $end_day = strtotime(date( 'Y-m-' . date( 't', strtotime($vvv) ) . ' 23:59:59', strtotime($vvv) ));
+                    $this_value = EquipmentStatisticsModel::getModelByTimeCount($start_day, $end_day, $where_data['equipment_id']);
+                    $this_value = empty($this_value) ? 0 : $this_value;
+                    $count += $this_value;
+                    $return_data[$kkk] = [
+                        $vvv,
+                        $this_value
+                    ];
+                }
+                $max_val = max(array_column($return_data, '1', 0));
+                $min_val = min(array_column($return_data, '1', 0));
+                foreach ($return_data as $key => $value) {
+                    if($max_val == $value[1]) $max_data[] = $value;
+                    if($min_val == $value[1]) $min_data[] = $value;
+                }
+                break;
+            default:
+                $date_list = getDateRange2(date('Y-m-d', $where_data['start_time']), date('Y-m-d', $where_data['end_time']));
+                foreach ($date_list as $k => $v) {
+                    $this_value = 0;
+                    $this_value = EquipmentStatisticsModel::getModelByTimeCount(strtotime($v . ' 00:00:00'), strtotime($v . ' 23:59:59'), $where_data['equipment_id']);
+                    $this_value = empty($this_value) ? 0 : $this_value;
+                    $count += $this_value;
+                    $return_data[$k] = [
+                        $v,
+                        $this_value
+                    ];
+                }
+                $max_val = max(array_column($return_data, '1', 0));
+                $min_val = min(array_column($return_data, '1', 0));
+                foreach ($return_data as $key => $value) {
+                    if($max_val == $value[1]) $max_data[] = $value;
+                    if($min_val == $value[1]) $min_data[] = $value;
+                }
+                break;
+        }
+        $agv_data = number_format($count / count($date_list), 2);
+        $return_array = [
+            'count' => $count,
+            'abscissa' => $return_data,
+            'max' => $max_data, //最大值
+            'min' => $min_data, //最小值
+            'average' => $agv_data, //平均值
+            'ordinate' => [ //纵坐标
+                ceil($max_val / 10) * 10,
+                ceil($max_val / 10)
+            ]
+        ];
+        $this->ajax_return(10000, $return_array, '数据查询成功！');
+    }
 }

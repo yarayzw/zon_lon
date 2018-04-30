@@ -11,7 +11,8 @@ namespace Home\Controller;
 
 use Home\Model\EquipmentListModel;
 use Home\Model\ErrorListModel;
-use Home\Model\CommanListModel;
+use Home\Model\CommandListModel;
+use Home\Model\EquipmentStatisticsModel;
 
 class OperateController extends PublicController
 {
@@ -63,7 +64,7 @@ class OperateController extends PublicController
         /**
          * crc验证是否正确
          */
-        $crc = base_convert(substr($string, 0, -4), 16, 10);
+        // $crc = base_convert(substr($string, 0, -4), 16, 10);
         /**
          * 通过装备地址标识获取对应的Id
          */
@@ -90,22 +91,18 @@ class OperateController extends PublicController
             $data['latitude'] = (int)substr($string, -22, -14) . '.' . substr($string, -14, -6);//经度
             $data['longitude'] = (int)substr($string, -40, -32) . '.' . substr($string, -32, -24);//维度
             $data['heartbeat'] = $string;//心跳包数据
-            CommanListModel::insertCommand($data);
+
+            /**
+             * 检测该设备Id一小时之内是否插入过数据
+             * 插入过：更新产生量
+             * 未插入：插入数据
+             */
+            EquipmentStatisticsModel::createData($data['equipment_id'], $data['container_use_percentage']);
+
+            /**
+             * 插入数据包记录
+             */
+            CommandListModel::insertCommand($data);
         }
-    }
-
-    /**
-     * [data_statistics 数据统计]
-     * @return [type] [description]
-     *
-     * 需要展示数据：
-     * 容器类型：长宽高
-     */
-    public function data_statistics(){
-        $data = I('request.');
-        $where_data['start_time'] = !$this->is_timestamp($data['start_time']) ? 0 : $data['start_time'];
-        $where_data['end_time'] = !$this->is_timestamp($data['end_time']) ? 0 : $data['end_time'];
-        var_export($where_data);
-    }
-
+    }   
 }
