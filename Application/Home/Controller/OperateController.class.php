@@ -31,7 +31,6 @@ class OperateController extends PublicController
         $data = EquipmentListModel::getModelByAddressNo($address);
         if (!$data) {
             ErrorListModel::insertInformation('No address of the device was found. the NO is ' . $address, ErrorListModel::ERROR_LOGIN);
-            socket_close($accept_resource);
         } else {
             // 有效数据包
             $data_content = dechex(date('Y') % 256) . dechex(floor(date('Y') / 256)) . dechex(date('m')) . dechex(date('d')) . dechex(date('H')) . dechex(date('i')) . dechex(date('s'));
@@ -48,7 +47,6 @@ class OperateController extends PublicController
             $post_data = "<TX{$frame_header}{$server_id}{$frame_length}{$data_content}{$crc_string}>";
             if (socket_write($accept_resource, strtoupper($post_data), strlen($post_data)) === false) {
                 ErrorListModel::insertInformation('Sending time to failure. the data is ' . strtoupper($post_data) . ' return message: ' . socket_strerror(socket_last_error()), ErrorListModel::ERROR_CHECK_TIME );
-                socket_close($accept_resource);
             }
         }
     }

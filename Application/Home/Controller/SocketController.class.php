@@ -14,6 +14,7 @@ class SocketController extends PublicController
 {
     private $ip = '0.0.0.0';//172.18.195.128  120.79.183.103   127.0.0.1
     private $port = 8792;
+    private $clients = [];
     const FRAME_HEADER = 'EB90';
     const TRASH_TERMINAL = '01';
     const LOGIN = '01';
@@ -28,6 +29,7 @@ class SocketController extends PublicController
     {
         set_time_limit(0);
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        $this->clients[] = $socket;
         if ($socket == false) {
             ErrorListModel::insertInformation('server create fail:' . socket_strerror(socket_last_error()));
         }
@@ -48,31 +50,39 @@ class SocketController extends PublicController
     public function getInformation($socket)
     {
         do {
-            /*接收客户端传过来的信息*/
-            $accept_resource = socket_accept($socket);
-            /*socket_accept的作用就是接受socket_bind()所绑定的主机发过来的套接流*/
-            if ($accept_resource !== false) {
-                /*读取客户端传过来的资源，并转化为字符串*/
-                $string = socket_read($accept_resource, 4096);
-                echo $string . PHP_EOL;
-                // 验证crc校验码是否正确
-                $crc_string = substr($string, -4);
-                $verify_crc = $this->crc16(substr($string, 8, -4));
-                if ($crc_string != $verify_crc) {
-                    ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
-                    socket_close($accept_resource);
+            //socket_select对读写套子节的数字是引用，为了保证clients不被改变，拷贝一份。
+            $read = $this->clients;
+            $write = null;
+            $expect = null;
+            // 当没有套字节可以读写继续等待， 第四个参数为null为阻塞， 为0位非阻塞,为>0 为等待时间
+            if (socket_select($read, $write, $expect, 0) < 1) continue;
+            // 查看是否有新的连接
+            if (in_array($socket, $read)) {
+                $this->clients[] = $new_socket = socket_accept($socket);
+                $key = array_search($socket, $read);
+                unset($read[$key]);
+            }
+            // 便利所有可读取数据套子节然后广播消息
+            foreach ($read as $read_sock) {
+                $string = socket_read($read_sock, 1024);
+                if ($string === false || $string == '') {
+                    $key = array_search($read_sock, $this->clients);
+                    socket_close($read_sock);
+                    unset($this->clients[$key]);
                     continue;
-                }
-                /*socket_read的作用就是读出socket_accept()的资源并把它转化为字符串*/
-                if ($string != false) {
-                    $this->functionHandle($string, $accept_resource);
                 } else {
-                    ErrorListModel::insertInformation('socket_read is fail');
+                    $crc_string = substr($string, -4);
+                    $verify_crc = $this->crc16(substr($string, 8, -4));
+                    if ($crc_string != $verify_crc) {
+                        ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
+                        continue;
+                    }
+                    $this->functionHandle($string, $read_sock);
                 }
-                /*socket_close的作用是关闭socket_create()或者socket_accept()所建立的套接流*/
-                socket_close($accept_resource);
             }
         } while (true);
+        /*socket_close的作用是关闭socket_create()或者socket_accept()所建立的套接流*/
+        socket_close($socket);
     }
 
     /**
@@ -98,7 +108,6 @@ class SocketController extends PublicController
                 break;
             default:
                 ErrorListModel::insertInformation('Getting the error of the function code. The function code is ' . $fun_string);
-                socket_close($accept_resource);
                 break;
         }
     }
