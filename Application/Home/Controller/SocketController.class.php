@@ -15,6 +15,7 @@ class SocketController extends PublicController
     private $ip = '0.0.0.0';//172.18.195.128  120.79.183.103   127.0.0.1
     private $port = 8792;
     const FRAME_HEADER = 'EB90';
+    const TRASH_TERMINAL = '01';
     const LOGIN = '01';
     const HEART_JUMP = '02';
     const CHECK_TIME = '07';
@@ -56,7 +57,7 @@ class SocketController extends PublicController
                 echo $string . PHP_EOL;
                 // 验证crc校验码是否正确
                 $crc_string = substr($string, -4);
-                $verify_crc = $this->crc16(substr($string, 6, -4));
+                $verify_crc = $this->crc16(substr($string, 8, -4));
                 if ($crc_string != $verify_crc) {
                     ErrorListModel::insertInformation('Incomplete data. the data is ' . $string);
                     socket_close($accept_resource);
@@ -81,7 +82,7 @@ class SocketController extends PublicController
      */
     public function functionHandle( $string, $accept_resource)
     {
-        $fun_string = substr($string, 10, 2);
+        $fun_string = substr($string, 12, 2);
         switch ($fun_string) {
             case self::LOGIN:
                 (new OperateController)->login($string, $accept_resource);

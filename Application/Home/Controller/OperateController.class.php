@@ -25,7 +25,7 @@ class OperateController extends PublicController
     public function login($string, $accept_resource)
     {
         // 地址的四位的16进制数据
-        $address_six_teen = substr($string, 6, 4);
+        $address_six_teen = substr($string, 8, 4);
         $address = base_convert($address_six_teen, 16, 10);
         // 判断数据库中是否该设备 没有则报错
         $data = EquipmentListModel::getModelByAddressNo($address);
@@ -43,10 +43,12 @@ class OperateController extends PublicController
             // 计算帧长
             $frame_length  = dechex(strlen($data_content . $crc_string) / 2);
             $frame_header = SocketController::FRAME_HEADER;
+            $server_id = SocketController::TRASH_TERMINAL;
             // 拼接数据 帧头 帧长 数据包 crc校验码
-            $post_data = "<TX{$frame_header}{$frame_length}{$data_content}{$crc_string}>";
+            $post_data = "<TX{$frame_header}{$server_id}{$frame_length}{$data_content}{$crc_string}>";
             if (socket_write($accept_resource, strtoupper($post_data), strlen($post_data)) === false) {
                 ErrorListModel::insertInformation('Sending time to failure. the data is ' . strtoupper($post_data) . ' return message: ' . socket_strerror(socket_last_error()), ErrorListModel::ERROR_CHECK_TIME );
+                socket_close($accept_resource);
             }
         }
     }
