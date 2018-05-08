@@ -19,10 +19,9 @@ class OperateController extends PublicController
     /**
      * 登录 对时
      * @param $string
-     * @param $accept_resource
      * @return null
      */
-    public function login($string, $accept_resource)
+    public function login($string)
     {
         // 地址的四位的16进制数据
         $address_six_teen = substr($string, 8, 4);
@@ -87,5 +86,79 @@ class OperateController extends PublicController
              */
             CommandListModel::insertCommand($data);
         }
-    }   
+    }
+
+    public function sendHandle()
+    {
+        $code = isset( $_POST['code']) ?  $_POST['code'] : '';
+        if (! $code) $this->ajax_return(10001, '', '功能码缺失');
+        $address_no = isset( $_POST['address_no']) ?  $_POST['address_no'] : '';
+        if (! $address_no) $this->ajax_return(10001, '', '设备号缺失');
+        $type = isset( $_POST['type']) ?  $_POST['type'] : '';
+        if (! $type && $type != 0) $this->ajax_return(10001, '', '类型缺失');
+        switch ($code) {
+            case SocketController::READ_MEASUREMENT:
+                $this->sendMeasurement($address_no, $type);
+                break;
+            case SocketController::READ_QUANTITATIVE:
+                //TODO::读定值数据
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 写定值
+     * @param $address_no
+     * @param $type
+     */
+    private function sendMeasurement($address_no, $type)
+    {
+        // 地址高位地位解析
+        $more_data = strlen(dechex(floor($address_no % 256))) < 2  ? '0' . dechex($address_no % 256)  : dechex($address_no % 256);
+        $less_data = strlen(dechex(floor($address_no / 256))) < 2  ? '0' . dechex($address_no / 256)  : dechex($address_no / 256);
+        // 地址16进制转换
+        $address_six_teen = $more_data . $less_data;
+        // 有效数据
+        $type = strlen(dechex(floor($type % 256))) < 2  ? '0' . dechex($type % 256)  : dechex($type % 256);
+        // 数据长度
+        $data_length = strlen($type) / 2;
+        $data_length = strlen(dechex(floor($data_length % 256))) < 2  ? '0' . dechex($data_length % 256)  : dechex($data_length % 256);
+        // 预测数据
+        $ready_data = $address_six_teen . SocketController::READ_MEASUREMENT . $data_length . $type;
+        $crc_string = self::crc16($ready_data);
+        $frame_length = strlen($ready_data . $crc_string) / 2;
+        $frame_length = strlen(dechex(floor($frame_length % 256))) < 2  ? '0' . dechex($frame_length % 256)  : dechex($frame_length % 256);
+        $post_data = '<TX' . SocketController::FRAME_HEADER . SocketController::TRASH_TERMINAL . $frame_length . $address_six_teen . SocketController::READ_MEASUREMENT . $data_length . $type . $crc_string . '>';
+        $this->sendSocketCustomer($post_data, 'measurement');
+    }
+
+    /**
+     * 向服务器端发送信息
+     * @param $message
+     * @param $prefix
+     */
+    private function sendSocketCustomer($message, $prefix)
+    {
+        // 创建一个socket套接流
+        $socket = socket_create(AF_INET,SOCK_STREAM,SOL_TCP);
+        // 连接服务端的套接流，这一步就是使客户端与服务器端的套接流建立联系
+        if(socket_connect($socket,'127.0.0.1',8792) == false) {
+            $this->ajax_return(10001, '', '连接服务端失败:' . socket_strerror(socket_last_error()));
+        } else {
+            // 向服务端写入字符串信息
+            if (socket_write($socket,$prefix . $message, strlen($prefix . $message)) == false) {
+                $this->ajax_return(10001, '', '写入服务端失败');
+            }
+        }
+        // 工作完毕，关闭套接流
+        socket_close($socket);
+    }
+
+    public function analysisReadMeasurement($string)
+    {
+
+
+    }
 }

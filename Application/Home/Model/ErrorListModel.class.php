@@ -14,6 +14,7 @@ class ErrorListModel extends Model
     const ERROR_SOCKET = 1;
     const ERROR_LOGIN = 2;
     const ERROR_CHECK_TIME = 3;
+    const ERROR_MEASUREMENT = 4;     // 读遥测数据
     /**
      * 插入数据
      * @param $info
