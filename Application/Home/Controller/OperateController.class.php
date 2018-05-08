@@ -17,7 +17,7 @@ use Home\Model\EquipmentStatisticsModel;
 class OperateController extends PublicController
 {
     /**
-     * 登录 对时
+     * 登录
      * @param $string
      * @return null
      */
@@ -115,22 +115,10 @@ class OperateController extends PublicController
      */
     private function sendMeasurement($address_no, $type)
     {
-        // 地址高位地位解析
-        $more_data = strlen(dechex(floor($address_no % 256))) < 2  ? '0' . dechex($address_no % 256)  : dechex($address_no % 256);
-        $less_data = strlen(dechex(floor($address_no / 256))) < 2  ? '0' . dechex($address_no / 256)  : dechex($address_no / 256);
-        // 地址16进制转换
-        $address_six_teen = $more_data . $less_data;
         // 有效数据
         $type = strlen(dechex(floor($type % 256))) < 2  ? '0' . dechex($type % 256)  : dechex($type % 256);
-        // 数据长度
-        $data_length = strlen($type) / 2;
-        $data_length = strlen(dechex(floor($data_length % 256))) < 2  ? '0' . dechex($data_length % 256)  : dechex($data_length % 256);
-        // 预测数据
-        $ready_data = $address_six_teen . SocketController::READ_MEASUREMENT . $data_length . $type;
-        $crc_string = self::crc16($ready_data);
-        $frame_length = strlen($ready_data . $crc_string) / 2;
-        $frame_length = strlen(dechex(floor($frame_length % 256))) < 2  ? '0' . dechex($frame_length % 256)  : dechex($frame_length % 256);
-        $post_data = '<TX' . SocketController::FRAME_HEADER . SocketController::TRASH_TERMINAL . $frame_length . $address_six_teen . SocketController::READ_MEASUREMENT . $data_length . $type . $crc_string . '>';
+        // 组装数据
+        $post_data = $this->montageData($address_no, $type);
         $this->sendSocketCustomer($post_data, 'measurement');
     }
 
@@ -150,15 +138,54 @@ class OperateController extends PublicController
             // 向服务端写入字符串信息
             if (socket_write($socket,$prefix . $message, strlen($prefix . $message)) == false) {
                 $this->ajax_return(10001, '', '写入服务端失败');
+            } else {
+                while($callback = socket_read($socket,4096)){
+                    echo 'server return message is:'.PHP_EOL.$callback;
+                }
             }
         }
         // 工作完毕，关闭套接流
         socket_close($socket);
     }
 
+    /**
+     * 数据十进制转换为四位十六进制
+     * @param $change_string
+     * @return string
+     */
+    public function changeDecimal($change_string)
+    {
+        $more_data = strlen(dechex(floor($change_string % 256))) < 2  ? '0' . dechex($change_string % 256)  : dechex($change_string % 256);
+        $less_data = strlen(dechex(floor($change_string / 256))) < 2  ? '0' . dechex($change_string / 256)  : dechex($change_string / 256);
+        return $more_data . $less_data;
+    }
+
+    // 读定值获取到的数据处理
     public function analysisReadMeasurement($string)
     {
 
 
+    }
+
+    /**
+     * 组合发往客户端的数据
+     * @param $address_no
+     * @param $data
+     * @return string
+     */
+    public function montageData($address_no, $data)
+    {
+        // 地址10进制转换为四位16进制
+        $address_six_teen = $this->changeDecimal($address_no);
+        // 数据长度
+        $data_length = strlen($data) / 2;
+        $data_length = strlen(dechex(floor($data_length % 256))) < 2  ? '0' . dechex($data_length % 256)  : dechex($data_length % 256);
+        // 预测数据
+        $ready_data = $address_six_teen . SocketController::READ_MEASUREMENT . $data_length . $data;
+        $crc_string = self::crc16($ready_data);
+        $frame_length = strlen($ready_data . $crc_string) / 2;
+        $frame_length = strlen(dechex(floor($frame_length % 256))) < 2  ? '0' . dechex($frame_length % 256)  : dechex($frame_length % 256);
+        $post_data = '<TX' . SocketController::FRAME_HEADER . SocketController::TRASH_TERMINAL . $frame_length . $address_six_teen . SocketController::READ_MEASUREMENT . $data_length . $data . $crc_string . '>';
+        return $post_data;
     }
 }

@@ -94,8 +94,8 @@ class SocketController extends PublicController
                     continue;
                 } else {
                     // 处理数据 后台主动请求和接收数据
-                    $msg = $this->analysisInformation($string, $read_sock);
-                    if ($msg == 'continue') continue;
+                    $this->analysisInformation($string, $read_sock);
+                    continue;
                 }
             }
         }
@@ -141,6 +141,7 @@ class SocketController extends PublicController
             $send_socket = null;
             $message = substr($string, strpos($string, '<TX'));
             $address_no = hexdec(substr($message, 11, 4));
+            // 获取当前需要的socket资源
             foreach ($this->clients as $k => $v) {
                 if ($k == $address_no) $send_socket = $v;
             }
