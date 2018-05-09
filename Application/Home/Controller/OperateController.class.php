@@ -171,6 +171,7 @@ class OperateController extends PublicController
      * 组合发往客户端的数据
      * @param $address_no
      * @param $data
+     * @param null $length
      * @return string
      */
     public function montageData($address_no, $data)
