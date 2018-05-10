@@ -166,7 +166,6 @@ class OperateController extends PublicController
     // 读定值获取到的数据处理
     public function analysisReadMeasurement($string)
     {
-        $string = 'EB90012D00020327015A02230301041E05001906002807000A080000002812738274094E0A00000112529078380B45CF38';
         $address_no = hexdec(substr($string, 8, 4));
         // 有用数据开始的长度 第一个类型
         $start_length = 16;
