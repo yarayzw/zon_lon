@@ -163,7 +163,10 @@ class OperateController extends PublicController
         return $more_data . $less_data;
     }
 
-    // 读定值获取到的数据处理
+    /**
+     * 读遥测获取到的数据处理
+     * @param $string
+     */
     public function analysisReadMeasurement($string)
     {
         $address_no = hexdec(substr($string, 8, 4));

@@ -65,6 +65,11 @@ class MeasurementListModel extends Model
         return $model->where($condition)->select();
     }
 
+    /**
+     * 将未读改为已读
+     * @param $id
+     * @return bool
+     */
     public static function changeStatusById($id)
     {
         $model = M('measurement_list');
