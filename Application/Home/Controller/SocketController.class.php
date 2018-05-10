@@ -14,13 +14,13 @@ class SocketController extends PublicController
 {
     private $ip = '0.0.0.0';//172.18.195.128  120.79.183.103   127.0.0.1
     private $port = 8792;
-    public $clients = [];
+    private $clients = [];
     const FRAME_HEADER = 'EB90';      // 帧头
     const TRASH_TERMINAL = '01';      // 服务id 垃圾
     const LOGIN = '01';               // 登录标识
     const HEART_JUMP = '02';          // 心跳标识
     const CHECK_TIME = '07';          // 对时标识
-    const READ_MEASUREMENT = '03';    // 读定值
+    const READ_MEASUREMENT = '03';    // 读遥测
     const READ_QUANTITATIVE = '04';
     const WRITE_QUANTITATIVE = '06';
 
@@ -72,6 +72,7 @@ class SocketController extends PublicController
         if (in_array($socket, $read)) {
             $new_socket = socket_accept($socket);
             $string = socket_read($new_socket, 1024);
+            var_dump( date('Y-m-d H:i:s') . ' ' . $string);
             // 判断是后台发送 还是 设备主动发送
             if (strpos($string, '<TX') === false) {
                 $this->clients[hexdec(substr($string, 8, 4))] = $new_socket;
@@ -87,6 +88,7 @@ class SocketController extends PublicController
             // 便利所有可读取数据套子节然后广播消息
             foreach ($read as $read_sock) {
                 $string = socket_read($read_sock, 1024);
+                var_dump( date('Y-m-d H:i:s') . ' ' . $string);
                 if ($string === false || $string == '') {
                     $key = array_search($read_sock, $this->clients);
                     socket_close($read_sock);
@@ -106,7 +108,7 @@ class SocketController extends PublicController
      * @param string $string
      * @param $accept_resource
      */
-    public function functionHandle( $string, $accept_resource)
+    public function functionHandle($string, $accept_resource)
     {
         $fun_string = substr($string, 12, 2);
         switch ($fun_string) {

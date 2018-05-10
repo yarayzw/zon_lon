@@ -88,6 +88,9 @@ class OperateController extends PublicController
         }
     }
 
+    /**
+     * 发送socket分发处理
+     */
     public function sendHandle()
     {
         $code = isset( $_POST['code']) ?  $_POST['code'] : '';
@@ -98,7 +101,7 @@ class OperateController extends PublicController
         if (! $type && $type != 0) $this->ajax_return(10001, '', '类型缺失');
         switch ($code) {
             case SocketController::READ_MEASUREMENT:
-                $this->sendMeasurement($address_no, $type);
+                $this->sendMeasurement($address_no, $type, 'measurement');
                 break;
             case SocketController::READ_QUANTITATIVE:
                 //TODO::读定值数据
@@ -109,17 +112,18 @@ class OperateController extends PublicController
     }
 
     /**
-     * 写定值
-     * @param $address_no
-     * @param $type
+     * 读遥测
+     * @param string | int $address_no  地址
+     * @param string | int $type        类型
+     * @param string $prefix            前缀
      */
-    private function sendMeasurement($address_no, $type)
+    private function sendMeasurement($address_no, $type, $prefix)
     {
         // 有效数据
         $type = strlen(dechex(floor($type % 256))) < 2  ? '0' . dechex($type % 256)  : dechex($type % 256);
         // 组装数据
         $post_data = $this->montageData($address_no, $type);
-        $this->sendSocketCustomer($post_data, 'measurement');
+        $this->sendSocketCustomer($post_data, $prefix);
     }
 
     /**
@@ -139,9 +143,7 @@ class OperateController extends PublicController
             if (socket_write($socket,$prefix . $message, strlen($prefix . $message)) == false) {
                 $this->ajax_return(10001, '', '写入服务端失败');
             } else {
-                while($callback = socket_read($socket,4096)){
-                    echo 'server return message is:'.PHP_EOL.$callback;
-                }
+                $this->ajax_return(10000, '', '写入服务端成功,等待数据处理');
             }
         }
         // 工作完毕，关闭套接流
@@ -163,6 +165,8 @@ class OperateController extends PublicController
     // 读定值获取到的数据处理
     public function analysisReadMeasurement($string)
     {
+        $content = substr($string,  18, -4);
+        
 
 
     }
@@ -171,7 +175,6 @@ class OperateController extends PublicController
      * 组合发往客户端的数据
      * @param $address_no
      * @param $data
-     * @param null $length
      * @return string
      */
     public function montageData($address_no, $data)
