@@ -9,6 +9,7 @@
 namespace Home\Controller;
 
 use Home\Model\ErrorListModel;
+use Home\Model\MeasurementListModel;
 
 class SocketController extends PublicController
 {
@@ -88,7 +89,7 @@ class SocketController extends PublicController
             // 便利所有可读取数据套子节然后广播消息
             foreach ($read as $read_sock) {
                 $string = socket_read($read_sock, 1024);
-                var_dump( date('Y-m-d H:i:s') . ' ' . $string);
+                var_dump( date('Y-m-d H:i:s') . ' ' . $string . ' old');
                 if ($string === false || $string == '') {
                     $key = array_search($read_sock, $this->clients);
                     socket_close($read_sock);
@@ -148,11 +149,13 @@ class SocketController extends PublicController
                 if ($k == $address_no) $send_socket = $v;
             }
             if (! $send_socket) {
-                echo json_encode(array('code' => 10001, 'content' => '', 'msg' => '该设备已掉线'));
+                $data = ['error_no' => 10001, 'error_msg' => '该设备已掉线'];
+                MeasurementListModel::insertMeasurementInformation($data);
                 return 'continue';
             }
             if (socket_write($send_socket, $message, strlen($message)) === false) {
-                echo json_encode(array('code' => 10001, 'content' => '', 'msg' => '发送请求信息失败'));
+                $data = ['error_no' => 10001, 'error_msg' => '发送请求信息失败'];
+                MeasurementListModel::insertMeasurementInformation($data);
                 return 'continue';
             }
         }
