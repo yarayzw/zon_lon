@@ -13,6 +13,7 @@ use Home\Model\EquipmentListModel;
 use Home\Model\ErrorListModel;
 use Home\Model\CommandListModel;
 use Home\Model\EquipmentStatisticsModel;
+use Home\Model\MeasurementListModel;
 
 class OperateController extends PublicController
 {
@@ -165,9 +166,100 @@ class OperateController extends PublicController
     // 读定值获取到的数据处理
     public function analysisReadMeasurement($string)
     {
-        $content = substr($string,  18, -4);
-        
+        $string = 'EB90012D00020327015A02230301041E05001906002807000A080000002812738274094E0A00000112529078380B45CF38';
+        $address_no = hexdec(substr($string, 8, 4));
+        // 有用数据开始的长度 第一个类型
+        $start_length = 16;
+        // 有用的数据内容
+        $data_content = substr($string, $start_length, -4);
+        $analysis_data = [];
+        do {
+            // 类型固定: 一个字节
+            $type_code = substr($data_content, 0, MeasurementListModel::TYPE_LENGTH);
+            // 当前类型的内容
+            $type_content = $this->getDataByFunctionCode($data_content, $type_code);
+            $data_content = $type_content['surplus'];
+            $analysis_data[$type_content['key']] = $type_content['content'];
+        } while($data_content != '');
+        $analysis_data['command'] = $string;
+        $analysis_data['address_no'] = $address_no;
+        $res = MeasurementListModel::insertMeasurementInformation($analysis_data);
+        if (! $res) {
+            $data = ['error_no' => 10001, 'error_msg' => '插入信息失败'];
+            MeasurementListModel::insertMeasurementInformation($data);
+        }
+    }
 
+    /**
+     * 根据不同类型码返回不同的值
+     * @param $data_content
+     * @param string | int $type_code 类型码
+     * @return array
+     */
+    public function getDataByFunctionCode($data_content, $type_code)
+    {
+        $length = 0;
+        $key = '';
+        switch ($type_code) {
+            case MeasurementListModel::BATTERY_PERCENT:
+                $length = MeasurementListModel::BATTERY_PERCENT_LENGTH;
+                $key = 'battery';
+                break;
+            case MeasurementListModel::TERMINAL_SIGNAL:
+                $length = MeasurementListModel::TERMINAL_SIGNAL_LENGTH;
+                $key = 'terminal_signal';
+                break;
+            case MeasurementListModel::CONTAINER_TYPE:
+                $length = MeasurementListModel::CONTAINER_TYPE_LENGTH;
+                $key = 'container_type';
+                break;
+            case MeasurementListModel::CONTAINER_PERCENT:
+                $length = MeasurementListModel::CONTAINER_PERCENT_LENGTH;
+                $key = 'container_percent';
+                break;
+            case MeasurementListModel::TEMPERATURE:
+                $length = MeasurementListModel::TEMPERATURE_LENGTH;
+                $key = 'temperature';
+                break;
+            case MeasurementListModel::HUMIDITY_PERCENT:
+                $length = MeasurementListModel::HUMIDITY_PERCENT_LENGTH;
+                $key = 'humidity_percent';
+                break;
+            case MeasurementListModel::OBLIQUITY:
+                $length = MeasurementListModel::OBLIQUITY_LENGTH;
+                $key = 'obliquity';
+                break;
+            case MeasurementListModel::LATITUDE:
+                $length = MeasurementListModel::LATITUDE_LENGTH;
+                $key = 'latitude';
+                break;
+            case MeasurementListModel::NORTH_SOUTH_LATITUDE:
+                $length = MeasurementListModel::NORTH_SOUTH_LATITUDE_LENGTH;
+                $key = 'north_south_latitude';
+                break;
+            case MeasurementListModel::LONGITUDE:
+                $length = MeasurementListModel::LONGITUDE_LENGTH;
+                $key = 'longitude';
+                break;
+            case MeasurementListModel::EAST_WEST_LONGITUDE:
+                $length = MeasurementListModel::EAST_WEST_LONGITUDE_LENGTH;
+                $key = 'east_west_longitude';
+                break;
+            default:
+                break;
+        }
+        $content = substr($data_content, MeasurementListModel::TYPE_LENGTH, $length);
+        if ($type_code == MeasurementListModel::LATITUDE || $type_code == MeasurementListModel::LONGITUDE) {
+            $number = $content / pow(10, 8);
+            $new_number = explode('.', $number);
+            $content = $new_number[0] . '.' . floor($new_number[1] / 60);
+        } else $content = hexdec($content);
+        unset($number, $new_number, $type_code);
+        return [
+            'content' => $content,
+            'surplus' => substr($data_content, MeasurementListModel::TYPE_LENGTH + $length),
+            'key' => $key
+        ];
 
     }
 
@@ -191,5 +283,22 @@ class OperateController extends PublicController
         $frame_length = strlen(dechex(floor($frame_length % 256))) < 2  ? '0' . dechex($frame_length % 256)  : dechex($frame_length % 256);
         $post_data = '<TX' . SocketController::FRAME_HEADER . SocketController::TRASH_TERMINAL . $frame_length . $address_six_teen . SocketController::READ_MEASUREMENT . $data_length . $data . $crc_string . '>';
         return $post_data;
+    }
+
+    /**
+     * 获取读遥测的未读信息 将其改为已读
+     */
+    public function getNotReadMeasurement()
+    {
+        $address_no = $_POST['address_no'];
+        if (! $address_no) $this->ajax_return(10001, '', '获取地址信息失败');
+        $no_read = MeasurementListModel::getModelByAddressAndNoRead($address_no);
+        // 将其改为已读
+        foreach ($no_read as $k => $v) {
+            $r = MeasurementListModel::changeStatusById($v['id']);
+            if (! $r) $this->ajax_return(10001, '', '修改已读信息失败');
+            unset($no_read[$k]['id'], $no_read[$k]['is_read'], $no_read[$k]['create_time'], $no_read[$k]['update_time'], $no_read[$k]['command']);
+        }
+        $this->ajax_return(10000, $no_read);
     }
 }
